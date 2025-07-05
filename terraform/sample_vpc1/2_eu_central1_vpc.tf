@@ -1,4 +1,10 @@
-# New VPC in eu-central-1 (Frankfurt) with 2 subnets, public ALB, and 2 ASGs
+# ----------------------------------------------------------
+# New VPC in eu-central-1 (Frankfurt): VPC, Subnets, Route Tables, Security, EC2, ALB, ASG
+# ----------------------------------------------------------
+# This file creates a sample VPC in eu-central-1 with two public subnets,
+# route tables, security group, EC2 instances, public ALB, and ASGs.
+# Best Practice: Use one subnet per AZ for high availability. Attach ALB to public subnets.
+# ----------------------------------------------------------
 
 provider "aws" {
   alias  = "eu"
@@ -91,6 +97,47 @@ resource "aws_security_group" "eu_sg" {
   }
 }
 
+# NOTE: For lab/demo simplicity, the same IAM role/profile is used for EU EC2s as in US. In production, use unique, least-privilege roles per region or workload.
+resource "aws_iam_role" "eu_spoke_iam_role" {
+  provider = aws.eu
+  name = "eu-spoke-role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = [
+            "ec2.amazonaws.com"
+          ]
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+  path = "/"
+  inline_policy {
+    name = "eu-spoke-iam-policy"
+    policy = jsonencode({
+      Version = "2012-10-17",
+      Statement = [
+        {
+          Action   = "*"
+          Resource = "*"
+          Effect   = "Allow"
+        }
+      ]
+    })
+  }
+}
+
+resource "aws_iam_instance_profile" "eu_spoke_instance_profile" {
+  provider = aws.eu
+  name = aws_iam_role.eu_spoke_iam_role.name
+  path = "/"
+  role = aws_iam_role.eu_spoke_iam_role.name
+}
+
 resource "aws_instance" "eu_app_instance1" {
   provider                    = aws.eu
   ami                         = data.aws_ami.ubuntu2204.id
@@ -99,6 +146,7 @@ resource "aws_instance" "eu_app_instance1" {
   vpc_security_group_ids      = [aws_security_group.eu_sg.id]
   key_name                    = var.aws_ssh_key_pair_name
   associate_public_ip_address = true
+  iam_instance_profile         = aws_iam_instance_profile.eu_spoke_instance_profile.name
   user_data                   = <<-EOT
                                 #!/bin/bash
                                 apt-get update
@@ -122,6 +170,7 @@ resource "aws_instance" "eu_app_instance2" {
   vpc_security_group_ids      = [aws_security_group.eu_sg.id]
   key_name                    = var.aws_ssh_key_pair_name
   associate_public_ip_address = true
+  iam_instance_profile         = aws_iam_instance_profile.eu_spoke_instance_profile.name
   user_data                   = <<-EOT
                                 #!/bin/bash
                                 apt-get update

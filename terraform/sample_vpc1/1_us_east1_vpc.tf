@@ -1,3 +1,11 @@
+# ----------------------------------------------------------
+# Sample VPC (us-east-1): VPC, Subnets, Route Tables, Security, EC2
+# ----------------------------------------------------------
+# This file creates a sample VPC in us-east-1 with two public subnets,
+# route tables, security group, IAM role/profile, and two EC2 instances.
+# Best Practice: Use one subnet per AZ for high availability.
+# ----------------------------------------------------------
+
 data "aws_ami" "ubuntu2204" {
   most_recent = true
   owners      = ["099720109477"] # Canonical
@@ -223,5 +231,62 @@ resource "aws_instance" "app_instance2" {
     Name = "${var.prefix}-z2-app"
     Category = "dev"
   }
+}
+
+# ----------------------------------------------------------
+# Application Load Balancer (ALB) and Target Group
+# ----------------------------------------------------------
+
+resource "aws_lb" "sample_alb" {
+  name               = "${var.prefix}-alb"
+  load_balancer_type = "application"
+  subnets            = [aws_subnet.sample_subnet1.id, aws_subnet.sample_subnet2.id]
+  security_groups    = [aws_security_group.sample_security_group.id]
+  internal           = false
+  enable_deletion_protection = false
+  tags = {
+    Name = "${var.prefix}-alb"
+  }
+}
+
+resource "aws_lb_target_group" "sample_alb_tg" {
+  name     = "${var.prefix}-alb-tg"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = aws_vpc.sample_vpc.id
+  health_check {
+    path                = "/"
+    protocol            = "HTTP"
+    matcher             = "200-399"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+  }
+  tags = {
+    Name = "${var.prefix}-alb-tg"
+  }
+}
+
+resource "aws_lb_listener" "sample_alb_listener" {
+  load_balancer_arn = aws_lb.sample_alb.arn
+  port              = 80
+  protocol          = "HTTP"
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.sample_alb_tg.arn
+  }
+}
+
+resource "aws_lb_target_group_attachment" "app1_attachment" {
+  target_group_arn = aws_lb_target_group.sample_alb_tg.arn
+  target_id        = aws_instance.app_instance1.id
+  port             = 80
+}
+
+resource "aws_lb_target_group_attachment" "app2_attachment" {
+  target_group_arn = aws_lb_target_group.sample_alb_tg.arn
+  target_id        = aws_instance.app_instance2.id
+  port             = 80
 }
 
