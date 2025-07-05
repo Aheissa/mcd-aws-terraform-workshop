@@ -5,7 +5,7 @@ variable "mcd_deployment_name" {
 
 variable "mcd_controller_aws_account_number" {
   description = "Multicloud Defense AWS Controller's account number."
-  default     = "878511901175" # AMER region
+  default     = "211635102794" # AMER region
 }
 
 variable "mcd_cloud_account_name" {
