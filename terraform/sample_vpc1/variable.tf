@@ -16,9 +16,16 @@ variable "aws_ssh_key_pair_name" {
   description = "AWS SSH key pair Id - used for managing/connecting to instances."
 }
 
-variable "mcd_controller_aws_account_number" {
-  description = "Multicloud Defense Controller's account number."
+variable "mcd_dns_query_log_config_id" {
+  description = "AWS query log configuration Id"
   type        = string
+  default     = ""
+}
+
+variable "mcd_s3_bucket" {
+  description = "S3 Bucket to store CloudTrail, Route53 Query Logs and VPC Flow Logs"
+  type        = string
+  default     = ""
 }
 
 
