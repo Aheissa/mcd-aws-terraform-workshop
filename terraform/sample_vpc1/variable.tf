@@ -29,4 +29,3 @@ variable "mcd_s3_bucket" {
 }
 
 
-
