@@ -47,26 +47,6 @@ resource "aws_subnet" "sample_subnet2" {
   }
 }
 
-# --- Add second subnet in AZ1 ---
-resource "aws_subnet" "sample_subnet1b" {
-  availability_zone = var.aws_availability_zone1
-  vpc_id            = aws_vpc.sample_vpc.id
-  cidr_block        = "10.0.1.0/24"
-  tags = {
-    Name = "${var.prefix}-z1-subnet-b"
-  }
-}
-
-# --- Add second subnet in AZ2 ---
-resource "aws_subnet" "sample_subnet2b" {
-  availability_zone = var.aws_availability_zone2
-  vpc_id            = aws_vpc.sample_vpc.id
-  cidr_block        = "10.0.4.0/24"
-  tags = {
-    Name = "${var.prefix}-z2-subnet-b"
-  }
-}
-
 resource "aws_route_table" "sample_route_table1" {
   vpc_id = aws_vpc.sample_vpc.id
   tags = {
@@ -81,21 +61,6 @@ resource "aws_route_table" "sample_route_table2" {
   }
 }
 
-# --- Add route tables for new subnets ---
-resource "aws_route_table" "sample_route_table1b" {
-  vpc_id = aws_vpc.sample_vpc.id
-  tags = {
-    Name = "${var.prefix}-z1-rt-b"
-  }
-}
-
-resource "aws_route_table" "sample_route_table2b" {
-  vpc_id = aws_vpc.sample_vpc.id
-  tags = {
-    Name = "${var.prefix}-z2-rt-b"
-  }
-}
-
 # --- Step 6: Secure VPC --- Disable the following two routes (towards internet gateway)
 resource "aws_route" "sample_internet_route1" {
   destination_cidr_block = "0.0.0.0/0"
@@ -107,18 +72,6 @@ resource "aws_route" "sample_internet_route2" {
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = aws_internet_gateway.sample_internet_gateway.id
   route_table_id         = aws_route_table.sample_route_table2.id
-}
-
-resource "aws_route" "sample_internet_route1b" {
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.sample_internet_gateway.id
-  route_table_id         = aws_route_table.sample_route_table1b.id
-}
-
-resource "aws_route" "sample_internet_route2b" {
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.sample_internet_gateway.id
-  route_table_id         = aws_route_table.sample_route_table2b.id
 }
 
 # --- Step 6: Secure VPC --- Enable the following two routes (towards MCD transit gateway)
@@ -148,16 +101,6 @@ resource "aws_route_table_association" "sample_subnet_route_table_association1" 
 resource "aws_route_table_association" "sample_subnet_route_table_association2" {
   route_table_id = aws_route_table.sample_route_table2.id
   subnet_id      = aws_subnet.sample_subnet2.id
-}
-
-resource "aws_route_table_association" "sample_subnet_route_table_association1b" {
-  route_table_id = aws_route_table.sample_route_table1b.id
-  subnet_id      = aws_subnet.sample_subnet1b.id
-}
-
-resource "aws_route_table_association" "sample_subnet_route_table_association2b" {
-  route_table_id = aws_route_table.sample_route_table2b.id
-  subnet_id      = aws_subnet.sample_subnet2b.id
 }
 
 resource "aws_security_group" "sample_security_group" {
@@ -276,54 +219,6 @@ resource "aws_instance" "app_instance2" {
   vpc_security_group_ids      = [aws_security_group.sample_security_group.id]
   tags = {
     Name = "${var.prefix}-z2-app"
-    Category = "dev"
-  }
-}
-
-resource "aws_instance" "app_instance1b" {
-  associate_public_ip_address = true
-  availability_zone           = var.aws_availability_zone1
-  ami                         = data.aws_ami.ubuntu2204.id
-  iam_instance_profile        = aws_iam_instance_profile.spoke_instance_profile.name
-  instance_type               = "t2.nano"
-  key_name                    = var.aws_ssh_key_pair_name
-  user_data                   = <<-EOT
-                                #!/bin/bash
-                                apt-get update
-                                apt-get upgrade -y
-                                apt-get install -y apache2 wget
-                                HOSTNAME=$(hostname)
-                                LOCALIP=$(hostname -I | awk '{print $1}')
-                                echo "<html><body><h1>Hello World</h1><p>Hi my hostname is $HOSTNAME and my internal IP is $LOCALIP</p></body></html>" > /var/www/html/index.html
-  EOT
-  subnet_id                   = aws_subnet.sample_subnet1b.id
-  vpc_security_group_ids      = [aws_security_group.sample_security_group.id]
-  tags = {
-    Name = "${var.prefix}-z1b-app"
-    Category = "prod"
-  }
-}
-
-resource "aws_instance" "app_instance2b" {
-  associate_public_ip_address = true
-  availability_zone           = var.aws_availability_zone2
-  ami                         = data.aws_ami.ubuntu2204.id
-  iam_instance_profile        = aws_iam_instance_profile.spoke_instance_profile.name
-  instance_type               = "t2.nano"
-  key_name                    = var.aws_ssh_key_pair_name
-  user_data                   = <<-EOT
-                                #!/bin/bash
-                                apt-get update
-                                apt-get upgrade -y
-                                apt-get install -y apache2 wget
-                                HOSTNAME=$(hostname)
-                                LOCALIP=$(hostname -I | awk '{print $1}')
-                                echo "<html><body><h1>Hello World</h1><p>Hi my hostname is $HOSTNAME and my internal IP is $LOCALIP</p></body></html>" > /var/www/html/index.html
-  EOT
-  subnet_id                   = aws_subnet.sample_subnet2b.id
-  vpc_security_group_ids      = [aws_security_group.sample_security_group.id]
-  tags = {
-    Name = "${var.prefix}-z2b-app"
     Category = "dev"
   }
 }

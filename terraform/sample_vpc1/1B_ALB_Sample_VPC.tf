@@ -29,9 +29,7 @@ resource "aws_lb" "sample_alb" {
   load_balancer_type = "application"
   subnets = [
     aws_subnet.sample_subnet1.id,
-    aws_subnet.sample_subnet1b.id,
-    aws_subnet.sample_subnet2.id,
-    aws_subnet.sample_subnet2b.id
+    aws_subnet.sample_subnet2.id
   ]
   security_groups    = [aws_security_group.alb_sg.id]
   internal           = false
@@ -79,17 +77,5 @@ resource "aws_lb_target_group_attachment" "app1_attachment" {
 resource "aws_lb_target_group_attachment" "app2_attachment" {
   target_group_arn = aws_lb_target_group.sample_alb_tg.arn
   target_id        = aws_instance.app_instance2.id
-  port             = 80
-}
-
-resource "aws_lb_target_group_attachment" "app1b_attachment" {
-  target_group_arn = aws_lb_target_group.sample_alb_tg.arn
-  target_id        = aws_instance.app_instance1b.id
-  port             = 80
-}
-
-resource "aws_lb_target_group_attachment" "app2b_attachment" {
-  target_group_arn = aws_lb_target_group.sample_alb_tg.arn
-  target_id        = aws_instance.app_instance2b.id
   port             = 80
 }
