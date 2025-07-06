@@ -11,13 +11,4 @@ terraform {
   }
 }
 
-resource "aws_key_pair" "us_key" {
-  key_name   = "mcd-lab"
-  public_key = file("~/.ssh/id_rsa.pub")
-}
-
-resource "aws_key_pair" "eu_key" {
-  provider   = aws.eu
-  key_name   = "mcd-lab"
-  public_key = file("~/.ssh/id_rsa.pub")
-}
+# Removed aws_key_pair resources as key pairs will be managed manually in AWS Console.

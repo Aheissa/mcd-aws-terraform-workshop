@@ -1,7 +1,6 @@
 aws_availability_zone1             = "us-east-1"
 aws_availability_zone2             = "us-east-1b"
-# aws_ssh_key_pair_name is no longer needed, as key pairs are managed by Terraform
-# aws_ssh_key_pair_name             = "mcd-lab"
+aws_ssh_key_pair_name             = "mcd-lab"
 mcd_inventory_regions             = ["us-east-1"]
 mcd_deployment_name               = "prod1"
 mcd_controller_aws_account_number = "211635102794" #AMER region
