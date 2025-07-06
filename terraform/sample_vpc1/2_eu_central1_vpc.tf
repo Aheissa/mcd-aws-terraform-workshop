@@ -156,6 +156,7 @@ resource "aws_iam_instance_profile" "eu_spoke_instance_profile" {
 
 resource "aws_instance" "eu_app_instance1" {
   provider                    = aws.eu
+  availability_zone           = "eu-central-1a"
   ami                         = data.aws_ami.ubuntu2204_eu.id
   instance_type               = "t2.nano"
   subnet_id                   = aws_subnet.eu_subnet1.id
@@ -180,6 +181,7 @@ resource "aws_instance" "eu_app_instance1" {
 
 resource "aws_instance" "eu_app_instance2" {
   provider                    = aws.eu
+  availability_zone           = "eu-central-1b"
   ami                         = data.aws_ami.ubuntu2204_eu.id
   instance_type               = "t2.nano"
   subnet_id                   = aws_subnet.eu_subnet2.id
