@@ -1,4 +1,4 @@
-aws_availability_zone1             = "us-east-1"
+aws_availability_zone1             = "us-east-1a"
 aws_availability_zone2             = "us-east-1b"
 aws_ssh_key_pair_name             = "mcd-lab"
 mcd_inventory_regions             = ["us-east-1"]
