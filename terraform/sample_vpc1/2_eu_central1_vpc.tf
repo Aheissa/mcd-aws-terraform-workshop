@@ -38,7 +38,7 @@ resource "aws_subnet" "eu_subnet1" {
   provider          = aws.eu
   vpc_id            = aws_vpc.eu_vpc.id
   cidr_block        = "10.1.1.0/24"
-  availability_zone = "eu-central-1a"
+  availability_zone = var.aws_availability_zone1
   tags = {
     Name = "${var.prefix}-eu-z1-subnet"
   }
@@ -48,7 +48,7 @@ resource "aws_subnet" "eu_subnet2" {
   provider          = aws.eu
   vpc_id            = aws_vpc.eu_vpc.id
   cidr_block        = "10.1.2.0/24"
-  availability_zone = "eu-central-1b"
+  availability_zone = var.aws_availability_zone2
   tags = {
     Name = "${var.prefix}-eu-z2-subnet"
   }
