@@ -189,7 +189,7 @@ resource "aws_instance" "app_instance1" {
   ami                         = data.aws_ami.ubuntu2204.id
   iam_instance_profile        = aws_iam_instance_profile.spoke_instance_profile.name
   instance_type               = "t2.nano"
-  key_name                    = var.aws_ssh_key_pair_name
+  key_name                    = aws_key_pair.us_key.key_name
   user_data                   = <<-EOT
                                 #!/bin/bash
                                 apt-get update
@@ -214,7 +214,7 @@ resource "aws_instance" "app_instance2" {
   ami                         = data.aws_ami.ubuntu2204.id
   iam_instance_profile        = aws_iam_instance_profile.spoke_instance_profile.name
   instance_type               = "t2.nano"
-  key_name                    = var.aws_ssh_key_pair_name
+  key_name                    = aws_key_pair.us_key.key_name
   user_data                   = <<-EOT
                                 #!/bin/bash
                                 apt-get update

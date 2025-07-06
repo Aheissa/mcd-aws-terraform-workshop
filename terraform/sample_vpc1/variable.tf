@@ -12,9 +12,10 @@ variable "aws_availability_zone2" {
   type        = string
 }
 
-variable "aws_ssh_key_pair_name" {
-  description = "AWS SSH key pair Id - used for managing/connecting to instances."
-}
+# aws_ssh_key_pair_name variable is no longer required as key pairs are managed by Terraform
+# variable "aws_ssh_key_pair_name" {
+#   description = "SSH Keypair ID used for App EC2 Instances."
+# }
 
 
 

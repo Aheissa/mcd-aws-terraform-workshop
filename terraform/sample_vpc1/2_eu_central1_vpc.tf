@@ -159,7 +159,7 @@ resource "aws_instance" "eu_app_instance1" {
   instance_type               = "t2.nano"
   subnet_id                   = aws_subnet.eu_subnet1.id
   vpc_security_group_ids      = [aws_security_group.eu_sg.id]
-  key_name                    = var.aws_ssh_key_pair_name
+  key_name                    = aws_key_pair.eu_key.key_name
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.eu_spoke_instance_profile.name
   user_data                   = <<-EOT
@@ -183,7 +183,7 @@ resource "aws_instance" "eu_app_instance2" {
   instance_type               = "t2.nano"
   subnet_id                   = aws_subnet.eu_subnet2.id
   vpc_security_group_ids      = [aws_security_group.eu_sg.id]
-  key_name                    = var.aws_ssh_key_pair_name
+  key_name                    = aws_key_pair.eu_key.key_name
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.eu_spoke_instance_profile.name
   user_data                   = <<-EOT
@@ -261,10 +261,10 @@ resource "aws_lb_target_group_attachment" "eu_app2_attachment" {
 
 resource "aws_launch_template" "eu_lt" {
   provider      = aws.eu
-  name_prefix   = "eu-lt-"
+  name_prefix   = "${var.prefix}-eu-lt-"
   image_id      = data.aws_ami.ubuntu2204_eu.id
   instance_type = "t2.nano"
-  key_name      = var.aws_ssh_key_pair_name
+  key_name      = aws_key_pair.eu_key.key_name
   vpc_security_group_ids = [aws_security_group.eu_sg.id]
   user_data = <<-EOT
     #!/bin/bash
