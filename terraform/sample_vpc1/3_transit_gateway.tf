@@ -41,6 +41,27 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "eu_vpc_attachment" {
   }
 }
 
+# Add route in US VPC route tables to reach EU VPC via TGW
+resource "aws_route" "us_to_eu_z1" {
+  route_table_id         = aws_route_table.sample_route_table1.id
+  destination_cidr_block = "10.1.0.0/16" # EU VPC CIDR
+  transit_gateway_id     = aws_ec2_transit_gateway.main.id
+}
+
+resource "aws_route" "us_to_eu_z2" {
+  route_table_id         = aws_route_table.sample_route_table2.id
+  destination_cidr_block = "10.1.0.0/16" # EU VPC CIDR
+  transit_gateway_id     = aws_ec2_transit_gateway.main.id
+}
+
+# Add route in EU VPC route table to reach US VPC via TGW
+resource "aws_route" "eu_to_us" {
+  provider               = aws.eu
+  route_table_id         = aws_route_table.eu_rt.id
+  destination_cidr_block = "10.0.0.0/16" # US VPC CIDR
+  transit_gateway_id     = aws_ec2_transit_gateway.main.id
+}
+
 # ----------------------------------------------------------
 # NOTES:
 # - Only one TGW is needed per region/account.

@@ -124,6 +124,12 @@ resource "aws_security_group" "eu_sg" {
     to_port     = 443
     cidr_blocks = ["0.0.0.0/0"]
   }
+  ingress {
+    protocol    = "icmp"
+    from_port   = -1
+    to_port     = -1
+    cidr_blocks = ["0.0.0.0/0"]
+  }
   tags = {
     Name = "${var.prefix}-eu-sg"
   }
