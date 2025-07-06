@@ -6,6 +6,10 @@
 # Best Practice: Use one subnet per AZ for high availability.
 # ----------------------------------------------------------
 
+# Get latest Ubuntu 22.04 AMI for us-east-1
+# Canonical official AMI
+# Used for EC2 instances
+# ----------------------------------------------------------
 data "aws_ami" "ubuntu2204" {
   most_recent = true
   owners      = ["099720109477"] # Canonical
@@ -19,6 +23,8 @@ data "aws_ami" "ubuntu2204" {
   }
 }
 
+# Create VPC
+# ----------------------------------------------------------
 resource "aws_vpc" "sample_vpc" {
   cidr_block = "10.0.0.0/16"
   tags = {
@@ -26,17 +32,23 @@ resource "aws_vpc" "sample_vpc" {
   }
 }
 
+# Create Internet Gateway for VPC
+# ----------------------------------------------------------
 resource "aws_internet_gateway" "sample_internet_gateway" {
   tags = {
     Name = "${var.prefix}-igw"
   }
 }
 
+# Attach Internet Gateway to VPC
+# ----------------------------------------------------------
 resource "aws_internet_gateway_attachment" "sample_igw_attachment" {
   internet_gateway_id = aws_internet_gateway.sample_internet_gateway.id
   vpc_id              = aws_vpc.sample_vpc.id
 }
 
+# Attach public subnets in two AZs
+# ----------------------------------------------------------
 resource "aws_subnet" "sample_subnet1" {
   availability_zone = var.aws_availability_zone1
   vpc_id            = aws_vpc.sample_vpc.id
@@ -55,6 +67,8 @@ resource "aws_subnet" "sample_subnet2" {
   }
 }
 
+# Create route tables for public subnets
+# ----------------------------------------------------------
 resource "aws_route_table" "sample_route_table1" {
   vpc_id = aws_vpc.sample_vpc.id
   tags = {
@@ -69,7 +83,8 @@ resource "aws_route_table" "sample_route_table2" {
   }
 }
 
-# --- Step 6: Secure VPC --- Disable the following two routes (towards internet gateway)
+# Add default routes to internet gateway
+# ----------------------------------------------------------
 resource "aws_route" "sample_internet_route1" {
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = aws_internet_gateway.sample_internet_gateway.id
@@ -82,25 +97,8 @@ resource "aws_route" "sample_internet_route2" {
   route_table_id         = aws_route_table.sample_route_table2.id
 }
 
-# --- Step 6: Secure VPC --- Enable the following two routes (towards MCD transit gateway)
-# resource "aws_route" "sample_internet_route1" {
-#   destination_cidr_block = "0.0.0.0/0"
-#   transit_gateway_id     = var.mcd_transit_gateway_id
-#   route_table_id         = aws_route_table.sample_route_table1.id
-#   depends_on = [
-#     ciscomcd_spoke_vpc.mcd_spoke
-#   ]
-# }
-
-# resource "aws_route" "sample_internet_route2" {
-#   destination_cidr_block = "0.0.0.0/0"
-#   transit_gateway_id     = var.mcd_transit_gateway_id
-#   route_table_id         = aws_route_table.sample_route_table2.id
-#   depends_on = [
-#     ciscomcd_spoke_vpc.mcd_spoke
-#   ]
-# }
-
+# Associate subnets with route tables
+# ----------------------------------------------------------
 resource "aws_route_table_association" "sample_subnet_route_table_association1" {
   route_table_id = aws_route_table.sample_route_table1.id
   subnet_id      = aws_subnet.sample_subnet1.id
@@ -111,6 +109,9 @@ resource "aws_route_table_association" "sample_subnet_route_table_association2" 
   subnet_id      = aws_subnet.sample_subnet2.id
 }
 
+# Security group for EC2 and ALB
+# Allows HTTP, HTTPS, port 8000, and all egress
+# ----------------------------------------------------------
 resource "aws_security_group" "sample_security_group" {
   name   = "${var.prefix}-security-group"
   vpc_id = aws_vpc.sample_vpc.id
@@ -143,6 +144,8 @@ resource "aws_security_group" "sample_security_group" {
   }
 }
 
+# IAM role and instance profile for EC2
+# ----------------------------------------------------------
 resource "aws_iam_role" "spoke_iam_role" {
   name = "${var.prefix}-spoke-role"
   assume_role_policy = jsonencode({
@@ -183,6 +186,8 @@ resource "aws_iam_instance_profile" "spoke_instance_profile" {
   role = aws_iam_role.spoke_iam_role.name
 }
 
+# EC2 instances in each subnet
+# ----------------------------------------------------------
 resource "aws_instance" "app_instance1" {
   associate_public_ip_address = true
   availability_zone           = var.aws_availability_zone1
@@ -233,10 +238,8 @@ resource "aws_instance" "app_instance2" {
   }
 }
 
-# ----------------------------------------------------------
 # Application Load Balancer (ALB) and Target Group
 # ----------------------------------------------------------
-
 resource "aws_lb" "sample_alb" {
   name               = "${var.prefix}-alb"
   load_balancer_type = "application"
@@ -289,4 +292,7 @@ resource "aws_lb_target_group_attachment" "app2_attachment" {
   target_id        = aws_instance.app_instance2.id
   port             = 80
 }
+# ----------------------------------------------------------
+# End of US VPC resources
+# ----------------------------------------------------------
 
