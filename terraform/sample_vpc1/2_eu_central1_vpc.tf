@@ -11,11 +11,26 @@ provider "aws" {
   region = "eu-central-1"
 }
 
+# AMI data source for eu-central-1 (Frankfurt)
+data "aws_ami" "ubuntu2204_eu" {
+  provider    = aws.eu
+  most_recent = true
+  owners      = ["099720109477"] # Canonical
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
 resource "aws_vpc" "eu_vpc" {
   provider   = aws.eu
   cidr_block = "10.1.0.0/16"
   tags = {
-    Name = "eu-vpc"
+    Name = "${var.prefix}-eu-vpc"
   }
 }
 
@@ -25,7 +40,7 @@ resource "aws_subnet" "eu_subnet1" {
   cidr_block        = "10.1.1.0/24"
   availability_zone = "eu-central-1a"
   tags = {
-    Name = "eu-z1-subnet"
+    Name = "${var.prefix}-eu-z1-subnet"
   }
 }
 
@@ -35,7 +50,7 @@ resource "aws_subnet" "eu_subnet2" {
   cidr_block        = "10.1.2.0/24"
   availability_zone = "eu-central-1b"
   tags = {
-    Name = "eu-z2-subnet"
+    Name = "${var.prefix}-eu-z2-subnet"
   }
 }
 
@@ -93,7 +108,7 @@ resource "aws_security_group" "eu_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
   tags = {
-    Name = "eu-sg"
+    Name = "${var.prefix}-eu-sg"
   }
 }
 
@@ -140,13 +155,13 @@ resource "aws_iam_instance_profile" "eu_spoke_instance_profile" {
 
 resource "aws_instance" "eu_app_instance1" {
   provider                    = aws.eu
-  ami                         = data.aws_ami.ubuntu2204.id
+  ami                         = data.aws_ami.ubuntu2204_eu.id
   instance_type               = "t2.nano"
   subnet_id                   = aws_subnet.eu_subnet1.id
   vpc_security_group_ids      = [aws_security_group.eu_sg.id]
   key_name                    = var.aws_ssh_key_pair_name
   associate_public_ip_address = true
-  iam_instance_profile         = aws_iam_instance_profile.eu_spoke_instance_profile.name
+  iam_instance_profile        = aws_iam_instance_profile.eu_spoke_instance_profile.name
   user_data                   = <<-EOT
                                 #!/bin/bash
                                 apt-get update
@@ -157,20 +172,20 @@ resource "aws_instance" "eu_app_instance1" {
                                 echo "<html><body><h1 style='font-size:48px;'>Hello World (EU)</h1><h2 style='font-size:36px;'>Hi! My hostname is <span style='color:blue;'>$HOSTNAME</span></h2><h2 style='font-size:36px;'>My internal IP is <span style='color:green;'>$LOCALIP</span></h2><h2 style='font-size:32px;'>Availability Zone: <span style='color:purple;'>$AZ</span></h2></body></html>" > /var/www/html/index.html
                                 EOT
   tags = {
-    Name = "eu-z1-app"
+    Name = "${var.prefix}-eu-z1-app"
     Category = "prod"
   }
 }
 
 resource "aws_instance" "eu_app_instance2" {
   provider                    = aws.eu
-  ami                         = data.aws_ami.ubuntu2204.id
+  ami                         = data.aws_ami.ubuntu2204_eu.id
   instance_type               = "t2.nano"
   subnet_id                   = aws_subnet.eu_subnet2.id
   vpc_security_group_ids      = [aws_security_group.eu_sg.id]
   key_name                    = var.aws_ssh_key_pair_name
   associate_public_ip_address = true
-  iam_instance_profile         = aws_iam_instance_profile.eu_spoke_instance_profile.name
+  iam_instance_profile        = aws_iam_instance_profile.eu_spoke_instance_profile.name
   user_data                   = <<-EOT
                                 #!/bin/bash
                                 apt-get update
@@ -181,7 +196,7 @@ resource "aws_instance" "eu_app_instance2" {
                                 echo "<html><body><h1 style='font-size:48px;'>Hello World (EU)</h1><h2 style='font-size:36px;'>Hi! My hostname is <span style='color:blue;'>$HOSTNAME</span></h2><h2 style='font-size:36px;'>My internal IP is <span style='color:green;'>$LOCALIP</span></h2><h2 style='font-size:32px;'>Availability Zone: <span style='color:purple;'>$AZ</span></h2></body></html>" > /var/www/html/index.html
                                 EOT
   tags = {
-    Name = "eu-z2-app"
+    Name = "${var.prefix}-eu-z2-app"
     Category = "dev"
   }
 }
@@ -247,7 +262,7 @@ resource "aws_lb_target_group_attachment" "eu_app2_attachment" {
 resource "aws_launch_template" "eu_lt" {
   provider      = aws.eu
   name_prefix   = "eu-lt-"
-  image_id      = data.aws_ami.ubuntu2204.id
+  image_id      = data.aws_ami.ubuntu2204_eu.id
   instance_type = "t2.nano"
   key_name      = var.aws_ssh_key_pair_name
   vpc_security_group_ids = [aws_security_group.eu_sg.id]
