@@ -84,10 +84,11 @@ resource "aws_cloudfront_distribution" "website_cdn" {
   origin {
     domain_name = aws_lb.sample_alb.dns_name
     origin_id   = "us-alb"
+    origin_path = "/alb"
     custom_origin_config {
       http_port              = 80
       https_port             = 443
-      origin_protocol_policy = "https-only"
+      origin_protocol_policy = "http-only"
       origin_ssl_protocols   = ["TLSv1.2"]
     }
   }
