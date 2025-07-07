@@ -39,6 +39,7 @@ resource "aws_s3_object" "index" {
   content = <<-EOT
     <html><body>
     <h1>Hello World from S3!</h1>
+    <h2>This is root directory /</h2>
     <p id="random-message"></p>
     <script>
       const messages = [

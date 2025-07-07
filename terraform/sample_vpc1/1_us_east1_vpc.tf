@@ -206,10 +206,9 @@ resource "aws_instance" "app_instance1" {
                                 apt-get update
                                 apt-get upgrade -y
                                 apt-get install -y apache2 wget
-                                HOSTNAME=$(hostname)
-                                LOCALIP=$(hostname -I | awk '{print $1}')
-                                AZ=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)
-                                echo "<html><body><h1 style='font-size:48px;'>Hello World</h1><h2 style='font-size:36px;'>Hi! My hostname is <span style='color:blue;'>$HOSTNAME</span></h2><h2 style='font-size:36px;'>My internal IP is <span style='color:green;'>$LOCALIP</span></h2><h2 style='font-size:32px;'>Availability Zone: <span style='color:purple;'>$AZ</span></h2></body></html>" > /var/www/html/index.html
+                                mkdir -p /var/www/html/alb
+                                echo '<html><body><h1>Hello from ALB EC2!</h1><h2>This is ALB directory /alb</h2></body></html>' > /var/www/html/alb/index.html
+                                echo '<html><body><h1>Hello from ALB EC2!</h1><h2>This is ALB root directory /</h2></body></html>' > /var/www/html/index.html
   EOT
   subnet_id                   = aws_subnet.sample_subnet1.id
   vpc_security_group_ids      = [aws_security_group.sample_security_group.id]
@@ -231,10 +230,9 @@ resource "aws_instance" "app_instance2" {
                                 apt-get update
                                 apt-get upgrade -y
                                 apt-get install -y apache2 wget
-                                HOSTNAME=$(hostname)
-                                LOCALIP=$(hostname -I | awk '{print $1}')
-                                AZ=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)
-                                echo "<html><body><h1 style='font-size:48px;'>Hello World</h1><h2 style='font-size:36px;'>Hi! My hostname is <span style='color:blue;'>$HOSTNAME</span></h2><h2 style='font-size:36px;'>My internal IP is <span style='color:green;'>$LOCALIP</span></h2><h2 style='font-size:32px;'>Availability Zone: <span style='color:purple;'>$AZ</span></h2></body></html>" > /var/www/html/index.html
+                                mkdir -p /var/www/html/alb
+                                echo '<html><body><h1>Hello from ALB EC2!</h1><h2>This is ALB directory /alb</h2></body></html>' > /var/www/html/alb/index.html
+                                echo '<html><body><h1>Hello from ALB EC2!</h1><h2>This is ALB root directory /</h2></body></html>' > /var/www/html/index.html
                                 EOT
   subnet_id                   = aws_subnet.sample_subnet2.id
   vpc_security_group_ids      = [aws_security_group.sample_security_group.id]
