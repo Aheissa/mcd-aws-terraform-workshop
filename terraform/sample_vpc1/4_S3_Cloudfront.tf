@@ -1,27 +1,50 @@
 # ----------------------------------------------------------
-# S3 Static Website Hosting with VPC Endpoint and CloudFront
+# S3 Static Website Hosting with VPC Endpoint and CloudFront (Modern, Non-Deprecated)
 # ----------------------------------------------------------
 # This configuration creates an S3 bucket for static website hosting,
 # serves a Hello World page with a timestamp, and configures a VPC S3 Gateway Endpoint
-# for private access from your VPC in us-east-1. CloudFront can be added for global CDN.
+# for private access from your VPC in us-east-1. CloudFront is included for global CDN.
+# Uses only non-deprecated AWS provider resources and arguments.
 # ----------------------------------------------------------
 
 # S3 bucket for static website hosting
 # ----------------------------------------------------------
 resource "aws_s3_bucket" "website" {
   bucket = "${var.prefix}-website-bucket"
-  acl    = "public-read"
-  website {
-    index_document = "index.html"
-    error_document = "error.html"
-  }
+  force_destroy = true
   tags = {
     Name = "${var.prefix}-website-bucket"
   }
 }
 
+# Enforce bucket ownership and allow public access
+resource "aws_s3_bucket_ownership_controls" "website" {
+  bucket = aws_s3_bucket.website.id
+  rule {
+    object_ownership = "BucketOwnerEnforced"
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "website" {
+  bucket = aws_s3_bucket.website.id
+  block_public_acls   = false
+  block_public_policy = false
+  ignore_public_acls  = false
+  restrict_public_buckets = false
+}
+
+# S3 bucket website configuration
+resource "aws_s3_bucket_website_configuration" "website" {
+  bucket = aws_s3_bucket.website.id
+  index_document {
+    suffix = "index.html"
+  }
+  error_document {
+    key = "error.html"
+  }
+}
+
 # S3 bucket policy to allow public read (for static website)
-# ----------------------------------------------------------
 resource "aws_s3_bucket_policy" "website_policy" {
   bucket = aws_s3_bucket.website.id
   policy = jsonencode({
@@ -38,8 +61,7 @@ resource "aws_s3_bucket_policy" "website_policy" {
 }
 
 # Upload index.html with Hello World and timestamp
-# ----------------------------------------------------------
-resource "aws_s3_bucket_object" "index" {
+resource "aws_s3_object" "index" {
   bucket = aws_s3_bucket.website.id
   key    = "index.html"
   content = <<-EOT
@@ -52,8 +74,6 @@ resource "aws_s3_bucket_object" "index" {
 }
 
 # S3 Gateway VPC Endpoint for private S3 access from VPC
-# Only one endpoint is needed per VPC, associate with all relevant route tables
-# ----------------------------------------------------------
 resource "aws_vpc_endpoint" "s3" {
   vpc_id          = aws_vpc.sample_vpc.id
   service_name    = "com.amazonaws.us-east-1.s3"
@@ -64,12 +84,12 @@ resource "aws_vpc_endpoint" "s3" {
   }
 }
 
-# (Optional) CloudFront distribution for global CDN
-# ----------------------------------------------------------
+# CloudFront distribution for global CDN
 resource "aws_cloudfront_distribution" "website_cdn" {
   origin {
-    domain_name = aws_s3_bucket.website.website_endpoint
+    domain_name = aws_s3_bucket_website_configuration.website.website_endpoint
     origin_id   = "s3-website"
+    # origin_protocol_policy removed; not valid here for S3 website endpoint
   }
   enabled             = true
   default_root_object = "index.html"
@@ -93,8 +113,6 @@ resource "aws_cloudfront_distribution" "website_cdn" {
       restriction_type = "none"
     }
   }
-  # No origin protocol policy strictness (default is not strict)
-  # Viewer policy set to allow-all for both HTTP and HTTPS
   tags = {
     Name = "${var.prefix}-website-cdn"
   }
