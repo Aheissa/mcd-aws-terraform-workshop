@@ -39,7 +39,27 @@ resource "aws_s3_object" "index" {
   content = <<-EOT
     <html><body>
     <h1>Hello World from S3!</h1>
-    <p>Timestamp: ${timestamp()}</p>
+    <p id="random-message"></p>
+    <script>
+      const messages = [
+        "Free Palestine!",
+        "Seize the fire!",
+        "Be better every day.",
+        "Focus on your goals.",
+        "Eat, sleep, code, repeat.",
+        "You are stronger than you think.",
+        "Coffee first, then conquer the world.",
+        "Stay curious, stay humble.",
+        "Dream big, hustle harder.",
+        "If at first you don’t succeed, call it version 1.0.",
+        "Keep calm and Terraform on.",
+        "The best way to get started is to quit talking and begin doing.",
+        "Don’t watch the clock; do what it does. Keep going.",
+        "Success is not for the lazy.",
+        "You miss 100% of the shots you don’t take."
+      ];
+      document.getElementById('random-message').innerText = messages[Math.floor(Math.random() * messages.length)];
+    </script>
     </body></html>
   EOT
   content_type = "text/html"
