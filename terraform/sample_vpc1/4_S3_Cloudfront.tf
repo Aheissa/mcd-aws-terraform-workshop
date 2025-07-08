@@ -1,13 +1,7 @@
 # ----------------------------------------------------------
 # S3 Private Static Website Hosting with CloudFront OAC (Compliant with Security Guardrails)
 # ----------------------------------------------------------
-# This configuration creates a private S3 bucket for static website hosting,
-# serves a Hello World page with a timestamp, and configures CloudFront with
-# Origin Access Control (OAC) for secure, compliant access. No public access or policy.
-# ----------------------------------------------------------
-
-# S3 bucket for static website hosting
-# ----------------------------------------------------------
+# 1. S3 Bucket and Access Controls
 resource "aws_s3_bucket" "website" {
   bucket = "${var.prefix}-website-bucket"
   force_destroy = true
@@ -16,7 +10,6 @@ resource "aws_s3_bucket" "website" {
   }
 }
 
-# Enforce bucket ownership and restrict public access
 resource "aws_s3_bucket_ownership_controls" "website" {
   bucket = aws_s3_bucket.website.id
   rule {
@@ -32,7 +25,7 @@ resource "aws_s3_bucket_public_access_block" "website" {
   restrict_public_buckets = true
 }
 
-# Upload index.html with Hello World and timestamp
+# 2. S3 Website Content
 resource "aws_s3_object" "index" {
   bucket = aws_s3_bucket.website.id
   key    = "index.html"
@@ -66,7 +59,28 @@ resource "aws_s3_object" "index" {
   content_type = "text/html"
 }
 
-# Create CloudFront Origin Access Control (OAC)
+# 3. S3 Bucket Policy (OAC Only)
+resource "aws_s3_bucket_policy" "website_policy" {
+  bucket = aws_s3_bucket.website.id
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {"Service": "cloudfront.amazonaws.com"},
+        Action = ["s3:GetObject"],
+        Resource = ["${aws_s3_bucket.website.arn}/*"],
+        Condition = {
+          StringEquals = {
+            "AWS:SourceArn" = aws_cloudfront_distribution.website_cdn.arn
+          }
+        }
+      }
+    ]
+  })
+}
+
+# 4. CloudFront Origin Access Control (OAC)
 resource "aws_cloudfront_origin_access_control" "website_oac" {
   name                              = "${var.prefix}-website-oac"
   description                       = "OAC for private S3 website bucket"
@@ -75,7 +89,7 @@ resource "aws_cloudfront_origin_access_control" "website_oac" {
   signing_protocol                  = "sigv4"
 }
 
-# CloudFront distribution for global CDN (private S3 origin)
+# 5. CloudFront Distribution
 resource "aws_cloudfront_distribution" "website_cdn" {
   origin {
     domain_name              = aws_s3_bucket.website.bucket_regional_domain_name
@@ -130,27 +144,6 @@ resource "aws_cloudfront_distribution" "website_cdn" {
   tags = {
     Name = "${var.prefix}-website-cdn"
   }
-}
-
-# S3 bucket policy to allow only CloudFront OAC to GetObject
-resource "aws_s3_bucket_policy" "website_policy" {
-  bucket = aws_s3_bucket.website.id
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Principal = {"Service": "cloudfront.amazonaws.com"},
-        Action = ["s3:GetObject"],
-        Resource = ["${aws_s3_bucket.website.arn}/*"],
-        Condition = {
-          StringEquals = {
-            "AWS:SourceArn" = aws_cloudfront_distribution.website_cdn.arn
-          }
-        }
-      }
-    ]
-  })
 }
 # ----------------------------------------------------------
 # End of S3 Website and CloudFront configuration (private, compliant)
