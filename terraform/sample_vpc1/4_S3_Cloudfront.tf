@@ -30,31 +30,38 @@ resource "aws_s3_object" "index" {
   bucket = aws_s3_bucket.website.id
   key    = "index.html"
   content = <<-EOT
-    <html><body>
-    <h1>Hello World from S3!</h1>
-    <h2>This is root directory /</h2>
-    <p id="random-message"></p>
-    <script>
-      const messages = [
-        "Free Palestine!",
-        "Seize the fire!",
-        "Be better every day.",
-        "Focus on your goals.",
-        "Eat, sleep, code, repeat.",
-        "You are stronger than you think.",
-        "Coffee first, then conquer the world.",
-        "Stay curious, stay humble.",
-        "Dream big, hustle harder.",
-        "If at first you don’t succeed, call it version 1.0.",
-        "Keep calm and Terraform on.",
-        "The best way to get started is to quit talking and begin doing.",
-        "Don’t watch the clock; do what it does. Keep going.",
-        "Success is not for the lazy.",
-        "You miss 100% of the shots you don’t take."
-      ];
-      document.getElementById('random-message').innerText = messages[Math.floor(Math.random() * messages.length)];
-    </script>
-    </body></html>
+    <html>
+    <body style="background: #f4f4f4; font-family: Arial, sans-serif;">
+      <h1 style="color: #2e86de; font-size: 48px; font-family: 'Trebuchet MS', sans-serif;">Hello World from S3!</h1>
+      <p id="random-message" style="font-size: 32px; font-weight: bold; margin-top: 40px;"></p>
+      <script>
+        const colors = ["#e74c3c", "#27ae60", "#8e44ad", "#c0392b", "#2980b9", "#d35400", "#16a085", "#f39c12", "#2c3e50"];
+        const messages = [
+          "Free Palestine!",
+          "Seize the fire!",
+          "Be better every day.",
+          "Focus on your goals.",
+          "Eat, sleep, code, repeat.",
+          "You are stronger than you think.",
+          "Coffee first, then conquer the world.",
+          "Stay curious, stay humble.",
+          "Dream big, hustle harder.",
+          "If at first you don’t succeed, call it version 1.0.",
+          "Keep calm and Terraform on.",
+          "The best way to get started is to quit talking and begin doing.",
+          "Don’t watch the clock; do what it does. Keep going.",
+          "Success is not for the lazy.",
+          "You miss 100% of the shots you don’t take."
+        ];
+        const msg = messages[Math.floor(Math.random() * messages.length)];
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        const el = document.getElementById('random-message');
+        el.innerText = msg;
+        el.style.color = color;
+        el.style.textShadow = "2px 2px 8px #aaa";
+      </script>
+    </body>
+    </html>
   EOT
   content_type = "text/html"
 }
