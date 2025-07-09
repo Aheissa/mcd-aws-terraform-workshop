@@ -55,3 +55,38 @@ jobs:
       - name: Terraform Apply
         working-directory: terraform
         run: terraform apply -auto-approve
+
+  terraform_destroy:
+    name: Terraform Destroy
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_IDP_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Write MCD API Key File
+        working-directory: terraform
+        run: echo '${{ secrets.MCD_API_KEY }}' > cisco_mcd/mcd_api_key.json
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.7.5
+
+      - name: Update Terraform S3 backend bucket name
+        working-directory: terraform
+        run: sed -i 's/PLACEHOLDER/${{ secrets.AWS_S3_BUCKET_NAME }}/' provider.tf 
+
+      - name: Terraform init
+        working-directory: terraform
+        run: terraform init
+
+      - name: Terraform Destroy
+        working-directory: terraform
+        run: terraform destroy -auto-approve

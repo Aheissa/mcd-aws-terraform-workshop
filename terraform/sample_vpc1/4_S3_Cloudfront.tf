@@ -10,6 +10,11 @@ resource "aws_s3_bucket" "cloudfront_logs" {
   }
 }
 
+resource "aws_s3_bucket_acl" "cloudfront_logs_acl" {
+  bucket = aws_s3_bucket.cloudfront_logs.id
+  acl    = "log-delivery-write"
+}
+
 # 1. S3 Bucket and Access Controls
 resource "aws_s3_bucket" "website" {
   bucket = "${var.prefix}-website-bucket"
