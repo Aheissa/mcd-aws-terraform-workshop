@@ -1,6 +1,15 @@
 # ----------------------------------------------------------
 # S3 Private Static Website Hosting with CloudFront OAC (Compliant with Security Guardrails)
 # ----------------------------------------------------------
+# 0. S3 Bucket for CloudFront Logging
+resource "aws_s3_bucket" "cloudfront_logs" {
+  bucket = "${var.prefix}-cloudfront-logs"
+  force_destroy = true
+  tags = {
+    Name = "${var.prefix}-cloudfront-logs"
+  }
+}
+
 # 1. S3 Bucket and Access Controls
 resource "aws_s3_bucket" "website" {
   bucket = "${var.prefix}-website-bucket"
@@ -32,7 +41,7 @@ resource "aws_s3_object" "index" {
   content = <<-EOT
     <html>
     <body style="background: #f4f4f4; font-family: Arial, sans-serif;">
-      <h1 style="color: #2e86de; font-size: 48px; font-family: 'Trebuchet MS', sans-serif;">Hello World from S3!</h1>
+      <h1 style="color: #2e86de; font-size: 48px; font-family: 'Trebuchet MS', sans-serif;">Hello World from S3 Bucket1 !</h1>
       <p id="random-message" style="font-size: 32px; font-weight: bold; margin-top: 40px;"></p>
       <script>
         const colors = ["#e74c3c", "#27ae60", "#8e44ad", "#c0392b", "#2980b9", "#d35400", "#16a085", "#f39c12", "#2c3e50"];
@@ -150,6 +159,51 @@ resource "aws_cloudfront_distribution" "website_cdn" {
   }
   tags = {
     Name = "${var.prefix}-website-cdn"
+  }
+}
+
+# 6. CloudFront Distribution for Private ALB (ECS)
+resource "aws_cloudfront_distribution" "ecs_private_alb" {
+  origin {
+    domain_name = aws_lb.sample_alb_private.dns_name
+    origin_id   = "private-alb"
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "http-only"
+      origin_ssl_protocols   = ["TLSv1.2"]
+    }
+  }
+  enabled             = true
+  default_root_object = "index.html"
+  default_cache_behavior {
+    allowed_methods  = ["GET", "HEAD"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "private-alb"
+    viewer_protocol_policy = "redirect-to-https"
+    forwarded_values {
+      query_string = false
+      headers      = ["*"]
+      cookies {
+        forward = "none"
+      }
+    }
+  }
+  viewer_certificate {
+    cloudfront_default_certificate = true
+  }
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
+  logging_config {
+    bucket = aws_s3_bucket.cloudfront_logs.bucket_domain_name
+    include_cookies = false
+    prefix = "ecs-private-alb-logs/"
+  }
+  tags = {
+    Name = "${var.prefix}-ecs-private-alb-cdn"
   }
 }
 # ----------------------------------------------------------
