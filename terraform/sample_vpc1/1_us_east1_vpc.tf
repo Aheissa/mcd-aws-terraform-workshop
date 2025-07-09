@@ -206,10 +206,10 @@ resource "aws_instance" "app_instance1" {
   key_name                    = var.aws_ssh_key_pair_name
   user_data                   = <<-EOT
                                 #!/bin/bash
-                                apt-get update
-                                apt-get upgrade -y
-                                apt-get install -y apache2 wget
-                                mkdir -p /var/www/html/alb
+                                sudo apt-get update
+                                sudo apt-get upgrade -y
+                                sudo apt-get install -y apache2 wget
+                                sudo mkdir -p /var/www/html/alb
                                 FQDN=$(hostname -f)
                                 LOCALIP=$(hostname -I | awk '{print $1}')
                                 PUBLICIP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
@@ -258,10 +258,10 @@ resource "aws_instance" "app_instance2" {
   key_name                    = var.aws_ssh_key_pair_name
   user_data                   = <<-EOT
                                 #!/bin/bash
-                                apt-get update
-                                apt-get upgrade -y
-                                apt-get install -y apache2 wget
-                                mkdir -p /var/www/html/alb
+                                sudo apt-get update
+                                sudo apt-get upgrade -y
+                                sudo apt-get install -y apache2 wget
+                                sudo mkdir -p /var/www/html/alb
                                 FQDN=$(hostname -f)
                                 LOCALIP=$(hostname -I | awk '{print $1}')
                                 PUBLICIP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
