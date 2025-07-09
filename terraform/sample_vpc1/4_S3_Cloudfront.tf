@@ -10,9 +10,24 @@ resource "aws_s3_bucket" "cloudfront_logs" {
   }
 }
 
-resource "aws_s3_bucket_acl" "cloudfront_logs_acl" {
+resource "aws_s3_bucket_policy" "cloudfront_logs_policy" {
   bucket = aws_s3_bucket.cloudfront_logs.id
-  acl    = "log-delivery-write"
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = { Service = "cloudfront.amazonaws.com" },
+        Action = ["s3:PutObject"],
+        Resource = "${aws_s3_bucket.cloudfront_logs.arn}/*",
+        Condition = {
+          StringEquals = {
+            "AWS:SourceAccount" = data.aws_caller_identity.current.account_id
+          }
+        }
+      }
+    ]
+  })
 }
 
 # 1. S3 Bucket and Access Controls

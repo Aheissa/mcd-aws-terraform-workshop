@@ -72,6 +72,7 @@ resource "aws_lb_target_group" "web" {
   port     = 80
   protocol = "HTTP"
   vpc_id   = aws_vpc.sample_vpc.id
+  target_type = "ip"
   health_check {
     path = "/"
     protocol = "HTTP"
@@ -82,6 +83,7 @@ resource "aws_lb_target_group" "app" {
   port     = 80
   protocol = "HTTP"
   vpc_id   = aws_vpc.sample_vpc.id
+  target_type = "ip"
   health_check {
     path = "/"
     protocol = "HTTP"
@@ -92,6 +94,7 @@ resource "aws_lb_target_group" "api" {
   port     = 80
   protocol = "HTTP"
   vpc_id   = aws_vpc.sample_vpc.id
+  target_type = "ip"
   health_check {
     path = "/"
     protocol = "HTTP"
