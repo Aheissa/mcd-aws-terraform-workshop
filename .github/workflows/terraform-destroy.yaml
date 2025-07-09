@@ -1,22 +1,16 @@
-name: Terraform Apply
+name: Terraform Destroy
 
 permissions:
   id-token: write
   contents: read
 
 on:
-  # Enable manual workflow trigger
   workflow_dispatch:
-  ## Disable running action on push for now
-  push:
-     branches:
-       - main
 
 jobs:
-  terraform_apply:
-    name: Terraform Apply
+  terraform_destroy:
+    name: Terraform Destroy
     runs-on: ubuntu-22.04
-
     steps:
       - name: Configure aws credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -44,14 +38,6 @@ jobs:
         working-directory: terraform
         run: terraform init
 
-      - name: Terraform Validate
+      - name: Terraform Destroy
         working-directory: terraform
-        run: terraform validate
-
-      - name: Terraform Plan
-        working-directory: terraform
-        run: terraform plan
-
-      - name: Terraform Apply
-        working-directory: terraform
-        run: terraform apply -auto-approve
+        run: terraform destroy -auto-approve
