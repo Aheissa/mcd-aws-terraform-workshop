@@ -170,6 +170,7 @@ resource "aws_lb_listener_rule" "web" {
       values = ["/web*"]
     }
   }
+  depends_on = [aws_lb_target_group.web]
 }
 resource "aws_lb_listener_rule" "app" {
   listener_arn = aws_lb_listener.sample_alb_listener_private.arn
@@ -183,6 +184,7 @@ resource "aws_lb_listener_rule" "app" {
       values = ["/app*"]
     }
   }
+  depends_on = [aws_lb_target_group.app]
 }
 resource "aws_lb_listener_rule" "api" {
   listener_arn = aws_lb_listener.sample_alb_listener_private.arn
@@ -196,6 +198,7 @@ resource "aws_lb_listener_rule" "api" {
       values = ["/api*"]
     }
   }
+  depends_on = [aws_lb_target_group.api]
 }
 # ----------------------------------------------------------
 # End of ECS + Private ALB path-based routing setup
