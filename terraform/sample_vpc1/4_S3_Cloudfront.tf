@@ -218,7 +218,7 @@ resource "aws_cloudfront_distribution" "ecs_private_alb" {
     }
   }
   logging_config {
-    bucket = aws_s3_bucket.cloudfront_logs.bucket_domain_name
+    bucket = aws_s3_bucket.cloudfront_logs.bucket
     include_cookies = false
     prefix = "ecs-private-alb-logs/"
   }
