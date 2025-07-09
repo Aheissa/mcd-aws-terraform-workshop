@@ -113,7 +113,7 @@ resource "aws_cloudfront_distribution" "website_cdn" {
     origin_access_control_id = aws_cloudfront_origin_access_control.website_oac.id
   }
   origin {
-    domain_name = aws_lb.sample_alb.dns_name
+    domain_name = aws_lb.sample_alb_public.dns_name
     origin_id   = "us-alb"
     custom_origin_config {
       http_port              = 80
