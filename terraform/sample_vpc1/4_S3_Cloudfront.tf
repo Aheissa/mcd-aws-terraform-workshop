@@ -189,29 +189,26 @@ resource "aws_cloudfront_distribution" "website_cdn" {
   }
 }
 
-# 0.1 CloudFront VPC Endpoint for Private ALB Origin
-resource "aws_vpc_endpoint" "cloudfront" {
-  vpc_id            = aws_vpc.sample_vpc.id
-  service_name      = "com.amazonaws.us-east-1.cloudfront-s3" # Hardcoded region for VPC endpoint, update if you deploy in another region
-  vpc_endpoint_type = "Interface"
-  subnet_ids        = [aws_subnet.sample_private_subnet1.id, aws_subnet.sample_private_subnet2.id]
-  security_group_ids = [aws_security_group.sample_security_group.id]
-  private_dns_enabled = true
-  tags = {
-    Name = "${var.prefix}-cloudfront-vpce"
+# 0.1 CloudFront VPC Origin for Private ALB
+resource "aws_cloudfront_vpc_origin" "alb" {
+  vpc_origin_endpoint_config {
+    name                   = "${var.prefix}-alb-vpc-origin"
+    arn                    = aws_lb.sample_alb_private.arn
+    http_port              = 80
+    https_port             = 443
+    origin_protocol_policy = "http-only"
+    origin_ssl_protocols {
+      items    = ["TLSv1.2"]
+      quantity = 1
+    }
   }
 }
 
 # 6. CloudFront Distribution for Private ALB (ECS)
 resource "aws_cloudfront_distribution" "ecs_private_alb" {
   origin {
-    domain_name = aws_lb.sample_alb_private.dns_name
+    domain_name = aws_cloudfront_vpc_origin.alb.domain_name
     origin_id   = "private-alb"
-    connection_attempts = 3
-    connection_timeout  = 10
-    vpc_origin {
-      vpc_endpoint_id = aws_vpc_endpoint.cloudfront.id
-    }
     custom_origin_config {
       http_port              = 80
       https_port             = 443
