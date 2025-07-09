@@ -61,35 +61,35 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "us_vpc_attachment" {
 # }
 
 # 5. Peering Attachment between US and EU TGWs
-resource "aws_ec2_transit_gateway_peering_attachment" "us_eu" {
-  transit_gateway_id      = aws_ec2_transit_gateway.us.id
-  peer_transit_gateway_id = aws_ec2_transit_gateway.eu.id
-  peer_region             = "eu-central-1"
-  tags = {
-    Name = "us-eu-tgw-peering"
-  }
-}
+# resource "aws_ec2_transit_gateway_peering_attachment" "us_eu" {
+#   transit_gateway_id      = aws_ec2_transit_gateway.us.id
+#   peer_transit_gateway_id = aws_ec2_transit_gateway.eu.id
+#   peer_region             = "eu-central-1"
+#   tags = {
+#     Name = "us-eu-tgw-peering"
+#   }
+# }
 
 # 6. Accept the peering attachment in the EU region
-resource "aws_ec2_transit_gateway_peering_attachment_accepter" "eu_accept" {
-  provider                        = aws.eu
-  transit_gateway_attachment_id    = aws_ec2_transit_gateway_peering_attachment.us_eu.id
-  tags = {
-    Name = "eu-accept-us-tgw-peering"
-  }
-}
+# resource "aws_ec2_transit_gateway_peering_attachment_accepter" "eu_accept" {
+#   provider                        = aws.eu
+#   transit_gateway_attachment_id    = aws_ec2_transit_gateway_peering_attachment.us_eu.id
+#   tags = {
+#     Name = "eu-accept-us-tgw-peering"
+#   }
+# }
 
 # 7. US VPC Route Table: Add routes to reach EU VPC via US TGW
-resource "aws_route" "us_to_eu_z1" {
-  route_table_id         = aws_route_table.sample_route_table1.id
-  destination_cidr_block = "10.1.0.0/16" # EU VPC CIDR
-  transit_gateway_id     = aws_ec2_transit_gateway.us.id
-}
-resource "aws_route" "us_to_eu_z2" {
-  route_table_id         = aws_route_table.sample_route_table2.id
-  destination_cidr_block = "10.1.0.0/16" # EU VPC CIDR
-  transit_gateway_id     = aws_ec2_transit_gateway.us.id
-}
+# resource "aws_route" "us_to_eu_z1" {
+#   route_table_id         = aws_route_table.sample_route_table1.id
+#   destination_cidr_block = "10.1.0.0/16" # EU VPC CIDR
+#   transit_gateway_id     = aws_ec2_transit_gateway.us.id
+# }
+# resource "aws_route" "us_to_eu_z2" {
+#   route_table_id         = aws_route_table.sample_route_table2.id
+#   destination_cidr_block = "10.1.0.0/16" # EU VPC CIDR
+#   transit_gateway_id     = aws_ec2_transit_gateway.us.id
+# }
 
 # 8. EU VPC Route Table: Add route to reach US VPC via EU TGW (commented out)
 # resource "aws_route" "eu_to_us" {
@@ -100,11 +100,11 @@ resource "aws_route" "us_to_eu_z2" {
 # }
 
 # 9. US TGW Route Table: Add route to reach EU VPC via peering
-resource "aws_ec2_transit_gateway_route" "us_to_eu" {
-  transit_gateway_route_table_id = aws_ec2_transit_gateway.us.association_default_route_table_id
-  destination_cidr_block         = "10.1.0.0/16" # EU VPC CIDR
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_peering_attachment.us_eu.id
-}
+# resource "aws_ec2_transit_gateway_route" "us_to_eu" {
+#   transit_gateway_route_table_id = aws_ec2_transit_gateway.us.association_default_route_table_id
+#   destination_cidr_block         = "10.1.0.0/16" # EU VPC CIDR
+#   transit_gateway_attachment_id  = aws_ec2_transit_gateway_peering_attachment.us_eu.id
+# }
 
 # 10. EU TGW Route Table: Add route to reach US VPC via peering (commented out)
 # resource "aws_ec2_transit_gateway_route" "eu_to_us" {
