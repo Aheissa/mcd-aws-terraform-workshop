@@ -226,6 +226,8 @@ resource "aws_cloudfront_distribution" "ecs_private_alb" {
     Name = "${var.prefix}-ecs-private-alb-cdn"
   }
 }
+
+data "aws_caller_identity" "current" {}
 # ----------------------------------------------------------
 # End of S3 Website and CloudFront configuration (private, compliant)
 # ----------------------------------------------------------
