@@ -207,7 +207,7 @@ resource "aws_cloudfront_vpc_origin" "alb" {
 # 6. CloudFront Distribution for Private ALB (ECS)
 resource "aws_cloudfront_distribution" "ecs_private_alb" {
   origin {
-    domain_name = aws_cloudfront_vpc_origin.alb.id
+    domain_name = aws_lb.sample_alb_private.dns_name
     origin_id   = "private-alb"
     custom_origin_config {
       http_port              = 80
