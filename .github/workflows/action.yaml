@@ -8,6 +8,12 @@ on:
   # Enable manual workflow trigger
   workflow_dispatch:
 
+  # Enable automatic run on push to any branch
+  push:
+    branches:
+      - main
+      - pilot
+  
 jobs:
   terraform_apply:
     name: Terraform Apply
