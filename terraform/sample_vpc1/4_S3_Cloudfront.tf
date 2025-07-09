@@ -30,6 +30,13 @@ resource "aws_s3_bucket_policy" "cloudfront_logs_policy" {
   })
 }
 
+resource "aws_s3_bucket_ownership_controls" "cloudfront_logs" {
+  bucket = aws_s3_bucket.cloudfront_logs.id
+  rule {
+    object_ownership = "ObjectWriter"
+  }
+}
+
 # 1. S3 Bucket and Access Controls
 resource "aws_s3_bucket" "website" {
   bucket = "${var.prefix}-website-bucket"
@@ -216,11 +223,6 @@ resource "aws_cloudfront_distribution" "ecs_private_alb" {
     geo_restriction {
       restriction_type = "none"
     }
-  }
-  logging_config {
-    bucket = aws_s3_bucket.cloudfront_logs.bucket_domain_name
-    include_cookies = false
-    prefix = "ecs-private-alb-logs/"
   }
   tags = {
     Name = "${var.prefix}-ecs-private-alb-cdn"
