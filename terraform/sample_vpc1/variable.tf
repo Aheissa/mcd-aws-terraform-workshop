@@ -16,6 +16,10 @@ variable "aws_ssh_key_pair_name" {
   description = "SSH Keypair ID used for App EC2 Instances."
   type        = string
 }
-
+variable "domain_name" {
+  description = "The root domain name for Route 53 hosted zone (e.g., example.com). Set this in terraform.tfvars."
+  type        = string
+  # Example: "example.com"
+}
 
 
