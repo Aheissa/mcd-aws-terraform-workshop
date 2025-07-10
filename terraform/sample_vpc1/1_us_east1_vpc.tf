@@ -207,7 +207,6 @@ resource "aws_instance" "app_instance1" {
   user_data                   = <<-EOT
                                 #!/bin/bash
                                 sudo apt-get update
-                                sudo apt-get upgrade -y
                                 sudo apt-get install -y apache2 wget
                                 sudo mkdir -p /var/www/html/alb
                                 FQDN=$(hostname -f)
@@ -215,30 +214,22 @@ resource "aws_instance" "app_instance1" {
                                 PUBLICIP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
                                 AZ=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)
                                 cat <<EOF > /var/www/html/index.html
-<html>
-  <body style="background: #f4f4f4; font-family: Arial, sans-serif;">
-    <h1 style="color: #2e86de; font-size: 48px; font-family: 'Trebuchet MS', sans-serif;">Hello from EC2! Root Directory /</h1>
-    <p style="font-size: 22px; color: #333;">FQDN: <span style="color: #8e44ad;"><b>$FQDN</b></span></p>
-    <p style="font-size: 22px; color: #333;">Internal IP: <span style="color: #d35400;"><b>$LOCALIP</b></span></p>
-    <p style="font-size: 22px; color: #333;">Public IP: <span style="color: #c0392b;"><b>$PUBLICIP</b></span></p>
-    <p style="font-size: 22px; color: #333;">Availability Zone: <span style="color: #16a085;"><b>$AZ</b></span></p>
-    <hr>
-    <h2 style="color: #e74c3c; font-size: 30px;">Free Palestine 🇵🇸</h2>
-  </body>
-</html>
+<html><body>
+<h2>EC2 Instance Info (Root)</h2>
+<p>FQDN: $FQDN</p>
+<p>Internal IP: $LOCALIP</p>
+<p>Public IP: $PUBLICIP</p>
+<p>AZ: $AZ</p>
+</body></html>
 EOF
                                 cat <<EOF > /var/www/html/alb/index.html
-<html>
-  <body style="background: #f4f4f4; font-family: Arial, sans-serif;">
-    <h1 style="color: #2e86de; font-size: 48px; font-family: 'Trebuchet MS', sans-serif;">Hello from EC2! ALB Directory /alb</h1>
-    <p style="font-size: 22px; color: #333;">FQDN: <span style="color: #8e44ad;"><b>$FQDN</b></span></p>
-    <p style="font-size: 22px; color: #333;">Internal IP: <span style="color: #d35400;"><b>$LOCALIP</b></span></p>
-    <p style="font-size: 22px; color: #333;">Public IP: <span style="color: #c0392b;"><b>$PUBLICIP</b></span></p>
-    <p style="font-size: 22px; color: #333;">Availability Zone: <span style="color: #16a085;"><b>$AZ</b></span></p>
-    <hr>
-    <h2 style="color: #27ae60; font-size: 30px;">Free Palestine 🇵🇸</h2>
-  </body>
-</html>
+<html><body>
+<h2>EC2 Instance Info (ALB Directory)</h2>
+<p>FQDN: $FQDN</p>
+<p>Internal IP: $LOCALIP</p>
+<p>Public IP: $PUBLICIP</p>
+<p>AZ: $AZ</p>
+</body></html>
 EOF
   EOT
   subnet_id                   = aws_subnet.sample_subnet1.id
@@ -259,7 +250,6 @@ resource "aws_instance" "app_instance2" {
   user_data                   = <<-EOT
                                 #!/bin/bash
                                 sudo apt-get update
-                                sudo apt-get upgrade -y
                                 sudo apt-get install -y apache2 wget
                                 sudo mkdir -p /var/www/html/alb
                                 FQDN=$(hostname -f)
@@ -267,30 +257,22 @@ resource "aws_instance" "app_instance2" {
                                 PUBLICIP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
                                 AZ=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)
                                 cat <<EOF > /var/www/html/index.html
-<html>
-  <body style="background: #f4f4f4; font-family: Arial, sans-serif;">
-    <h1 style="color: #2e86de; font-size: 48px; font-family: 'Trebuchet MS', sans-serif;">Hello from EC2! Root Directory /</h1>
-    <p style="font-size: 22px; color: #333;">FQDN: <span style="color: #8e44ad;"><b>$FQDN</b></span></p>
-    <p style="font-size: 22px; color: #333;">Internal IP: <span style="color: #d35400;"><b>$LOCALIP</b></span></p>
-    <p style="font-size: 22px; color: #333;">Public IP: <span style="color: #c0392b;"><b>$PUBLICIP</b></span></p>
-    <p style="font-size: 22px; color: #333;">Availability Zone: <span style="color: #16a085;"><b>$AZ</b></span></p>
-    <hr>
-    <h2 style="color: #e74c3c; font-size: 30px;">Free Palestine 🇵🇸</h2>
-  </body>
-</html>
+<html><body>
+<h2>EC2 Instance Info (Root)</h2>
+<p>FQDN: $FQDN</p>
+<p>Internal IP: $LOCALIP</p>
+<p>Public IP: $PUBLICIP</p>
+<p>AZ: $AZ</p>
+</body></html>
 EOF
                                 cat <<EOF > /var/www/html/alb/index.html
-<html>
-  <body style="background: #f4f4f4; font-family: Arial, sans-serif;">
-    <h1 style="color: #2e86de; font-size: 48px; font-family: 'Trebuchet MS', sans-serif;">Hello from EC2! ALB Directory /alb</h1>
-    <p style="font-size: 22px; color: #333;">FQDN: <span style="color: #8e44ad;"><b>$FQDN</b></span></p>
-    <p style="font-size: 22px; color: #333;">Internal IP: <span style="color: #d35400;"><b>$LOCALIP</b></span></p>
-    <p style="font-size: 22px; color: #333;">Public IP: <span style="color: #c0392b;"><b>$PUBLICIP</b></span></p>
-    <p style="font-size: 22px; color: #333;">Availability Zone: <span style="color: #16a085;"><b>$AZ</b></span></p>
-    <hr>
-    <h2 style="color: #27ae60; font-size: 30px;">Free Palestine 🇵🇸</h2>
-  </body>
-</html>
+<html><body>
+<h2>EC2 Instance Info (ALB Directory)</h2>
+<p>FQDN: $FQDN</p>
+<p>Internal IP: $LOCALIP</p>
+<p>Public IP: $PUBLICIP</p>
+<p>AZ: $AZ</p>
+</body></html>
 EOF
   EOT
   subnet_id                   = aws_subnet.sample_subnet2.id
