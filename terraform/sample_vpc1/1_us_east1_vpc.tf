@@ -204,16 +204,16 @@ resource "aws_instance" "app_instance1" {
   iam_instance_profile        = aws_iam_instance_profile.spoke_instance_profile.name
   instance_type               = "t2.nano"
   key_name                    = var.aws_ssh_key_pair_name
-  user_data                   = <<-EOT
-                                #!/bin/bash
-                                sudo apt-get update
-                                sudo apt-get install -y apache2 wget
-                                sudo mkdir -p /var/www/html/alb
-                                FQDN=$(hostname -f)
-                                LOCALIP=$(hostname -I | awk '{print $1}')
-                                PUBLICIP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
-                                AZ=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)
-                                cat <<EOF > /var/www/html/index.html
+  user_data                   = <<EOT
+#!/bin/bash
+sudo apt-get update
+sudo apt-get install -y apache2 wget
+sudo mkdir -p /var/www/html/alb
+FQDN=$(hostname -f)
+LOCALIP=$(hostname -I | awk '{print $1}')
+PUBLICIP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
+AZ=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)
+cat <<EOF > /var/www/html/index.html
 <html><body>
 <h2>EC2 Instance Info (Root)</h2>
 <p>FQDN: $FQDN</p>
@@ -222,7 +222,7 @@ resource "aws_instance" "app_instance1" {
 <p>AZ: $AZ</p>
 </body></html>
 EOF
-                                cat <<EOF > /var/www/html/alb/index.html
+cat <<EOF > /var/www/html/alb/index.html
 <html><body>
 <h2>EC2 Instance Info (ALB Directory)</h2>
 <p>FQDN: $FQDN</p>
@@ -231,7 +231,7 @@ EOF
 <p>AZ: $AZ</p>
 </body></html>
 EOF
-  EOT
+EOT
   subnet_id                   = aws_subnet.sample_subnet1.id
   vpc_security_group_ids      = [aws_security_group.sample_security_group.id]
   tags = {
@@ -247,16 +247,16 @@ resource "aws_instance" "app_instance2" {
   iam_instance_profile        = aws_iam_instance_profile.spoke_instance_profile.name
   instance_type               = "t2.nano"
   key_name                    = var.aws_ssh_key_pair_name
-  user_data                   = <<-EOT
-                                #!/bin/bash
-                                sudo apt-get update
-                                sudo apt-get install -y apache2 wget
-                                sudo mkdir -p /var/www/html/alb
-                                FQDN=$(hostname -f)
-                                LOCALIP=$(hostname -I | awk '{print $1}')
-                                PUBLICIP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
-                                AZ=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)
-                                cat <<EOF > /var/www/html/index.html
+  user_data                   = <<EOT
+#!/bin/bash
+sudo apt-get update
+sudo apt-get install -y apache2 wget
+sudo mkdir -p /var/www/html/alb
+FQDN=$(hostname -f)
+LOCALIP=$(hostname -I | awk '{print $1}')
+PUBLICIP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
+AZ=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)
+cat <<EOF > /var/www/html/index.html
 <html><body>
 <h2>EC2 Instance Info (Root)</h2>
 <p>FQDN: $FQDN</p>
@@ -265,7 +265,7 @@ resource "aws_instance" "app_instance2" {
 <p>AZ: $AZ</p>
 </body></html>
 EOF
-                                cat <<EOF > /var/www/html/alb/index.html
+cat <<EOF > /var/www/html/alb/index.html
 <html><body>
 <h2>EC2 Instance Info (ALB Directory)</h2>
 <p>FQDN: $FQDN</p>
@@ -274,7 +274,7 @@ EOF
 <p>AZ: $AZ</p>
 </body></html>
 EOF
-  EOT
+EOT
   subnet_id                   = aws_subnet.sample_subnet2.id
   vpc_security_group_ids      = [aws_security_group.sample_security_group.id]
   tags = {
