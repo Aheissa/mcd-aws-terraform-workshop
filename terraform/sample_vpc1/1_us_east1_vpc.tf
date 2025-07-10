@@ -258,7 +258,7 @@ PUBLICIP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
 AZ=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)
 cat <<EOF > /var/www/html/index.html
 <html><body>
-<h2>EC2 Instance Info (Root)</h2>
+<h2>EC2 Instance Info :: (Root)</h2>
 <p>FQDN: $FQDN</p>
 <p>Internal IP: $LOCALIP</p>
 <p>Public IP: $PUBLICIP</p>
@@ -267,7 +267,7 @@ cat <<EOF > /var/www/html/index.html
 EOF
 cat <<EOF > /var/www/html/alb/index.html
 <html><body>
-<h2>EC2 Instance Info (ALB Directory)</h2>
+<h2>EC2 Instance Info :: (ALB Directory)</h2>
 <p>FQDN: $FQDN</p>
 <p>Internal IP: $LOCALIP</p>
 <p>Public IP: $PUBLICIP</p>
