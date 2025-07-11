@@ -258,6 +258,13 @@ resource "aws_lb_target_group_attachment" "nlb_api" {
   port             = 80
   depends_on       = [aws_ecs_service.api]
 }
+resource "aws_lb_target_group_attachment" "nlb_placeholder" {
+  target_group_arn = aws_lb_target_group.nlb_ecs.arn
+  target_id        = "10.0.11.10" # <-- Replace with your ALB's private IP(s) after ALB is created
+  port             = 80
+  # NOTE: After ALB is created, update this target_id to the ALB's private IP(s).
+  # For multi-AZ, add more attachments for each ALB IP.
+}
 # ----------------------------------------------------------
 # End of ECS + ALB/NLB path-based routing setup
 # ----------------------------------------------------------
