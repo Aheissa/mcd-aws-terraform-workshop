@@ -114,7 +114,6 @@ resource "aws_route_table_association" "sample_private_subnet2_private_rt" {
 
 # NAT Gateway for Private Subnets
 resource "aws_eip" "nat_eip" {
-  vpc = true
   depends_on = [aws_internet_gateway.sample_internet_gateway]
 }
 
