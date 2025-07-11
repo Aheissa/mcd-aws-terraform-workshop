@@ -240,25 +240,8 @@ resource "aws_lb_listener" "nlb_listener" {
   }
 }
 
-resource "aws_lb_target_group_attachment" "nlb_web" {
-  target_group_arn = aws_lb_target_group.nlb_ecs.arn
-  target_id        = aws_ecs_service.web.network_configuration[0].assign_public_ip == false ? aws_ecs_service.web.id : null
-  port             = 80
-  depends_on       = [aws_ecs_service.web]
-}
-resource "aws_lb_target_group_attachment" "nlb_app" {
-  target_group_arn = aws_lb_target_group.nlb_ecs.arn
-  target_id        = aws_ecs_service.app.network_configuration[0].assign_public_ip == false ? aws_ecs_service.app.id : null
-  port             = 80
-  depends_on       = [aws_ecs_service.app]
-}
-resource "aws_lb_target_group_attachment" "nlb_api" {
-  target_group_arn = aws_lb_target_group.nlb_ecs.arn
-  target_id        = aws_ecs_service.api.network_configuration[0].assign_public_ip == false ? aws_ecs_service.api.id : null
-  port             = 80
-  depends_on       = [aws_ecs_service.api]
-}
-resource "aws_lb_target_group_attachment" "nlb_placeholder" {
+# Register the ALB's private IP(s) as NLB targets. Replace the IP below after ALB is created.
+resource "aws_lb_target_group_attachment" "nlb_alb" {
   target_group_arn = aws_lb_target_group.nlb_ecs.arn
   target_id        = "10.0.11.10" # <-- Replace with your ALB's private IP(s) after ALB is created
   port             = 80
