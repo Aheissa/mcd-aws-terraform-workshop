@@ -55,6 +55,3 @@ This project provisions a secure, multi-tier AWS environment using Terraform. It
 - **Private ALB**: Test from a bastion or private EC2 using `curl http://<private-alb-dns>/web` etc.
 - **CloudFront**: Test all paths (`/`, `/alb/`, `/web/`, `/app/`, `/api/`).
 - **EC2**: SSH and check `/var/www/html/index.html` and `/var/www/html/alb/index.html`.
-
----
-For more details, see the individual `.tf` files in this folder.
