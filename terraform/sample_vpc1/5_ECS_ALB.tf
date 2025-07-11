@@ -1,6 +1,10 @@
 # 5_ECS_ALB.tf
 # ----------------------------------------------------------
-# ECS Services (web, app, api) behind Private ALB in Private Subnets
+# ECS Services (web, app, api) behind Private ALB and Public NLB for CloudFront Proxy
+# ----------------------------------------------------------
+# This file now includes a public NLB in front of ECS services for CloudFront integration.
+# NLB forwards traffic to ECS services (Fargate) in private subnets.
+# Security groups and health checks are updated for this pattern.
 # ----------------------------------------------------------
 # 1. ECS Cluster
 resource "aws_ecs_cluster" "main" {
@@ -200,6 +204,60 @@ resource "aws_lb_listener_rule" "api" {
   }
   depends_on = [aws_lb_target_group.api]
 }
+
 # ----------------------------------------------------------
-# End of ECS + Private ALB path-based routing setup
+# Public NLB for CloudFront Proxy
+# ----------------------------------------------------------
+resource "aws_lb" "public_nlb" {
+  name               = "${var.prefix}-nlb-public"
+  load_balancer_type = "network"
+  subnets            = [aws_subnet.sample_subnet1.id, aws_subnet.sample_subnet2.id]
+  internal           = false
+  enable_deletion_protection = false
+  tags = { Name = "${var.prefix}-nlb-public" }
+}
+
+resource "aws_lb_target_group" "nlb_ecs" {
+  name        = "${var.prefix}-nlb-ecs-tg"
+  port        = 80
+  protocol    = "TCP"
+  vpc_id      = aws_vpc.sample_vpc.id
+  target_type = "ip"
+  health_check {
+    protocol = "TCP"
+    port     = "80"
+  }
+  tags = { Name = "${var.prefix}-nlb-ecs-tg" }
+}
+
+resource "aws_lb_listener" "nlb_listener" {
+  load_balancer_arn = aws_lb.public_nlb.arn
+  port              = 80
+  protocol          = "TCP"
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.nlb_ecs.arn
+  }
+}
+
+resource "aws_lb_target_group_attachment" "nlb_web" {
+  target_group_arn = aws_lb_target_group.nlb_ecs.arn
+  target_id        = aws_ecs_service.web.network_configuration[0].assign_public_ip == false ? aws_ecs_service.web.id : null
+  port             = 80
+  depends_on       = [aws_ecs_service.web]
+}
+resource "aws_lb_target_group_attachment" "nlb_app" {
+  target_group_arn = aws_lb_target_group.nlb_ecs.arn
+  target_id        = aws_ecs_service.app.network_configuration[0].assign_public_ip == false ? aws_ecs_service.app.id : null
+  port             = 80
+  depends_on       = [aws_ecs_service.app]
+}
+resource "aws_lb_target_group_attachment" "nlb_api" {
+  target_group_arn = aws_lb_target_group.nlb_ecs.arn
+  target_id        = aws_ecs_service.api.network_configuration[0].assign_public_ip == false ? aws_ecs_service.api.id : null
+  port             = 80
+  depends_on       = [aws_ecs_service.api]
+}
+# ----------------------------------------------------------
+# End of ECS + ALB/NLB path-based routing setup
 # ----------------------------------------------------------

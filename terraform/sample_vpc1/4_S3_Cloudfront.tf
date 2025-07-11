@@ -149,6 +149,16 @@ resource "aws_cloudfront_distribution" "website_cdn" {
       origin_ssl_protocols   = ["TLSv1.2"]
     }
   }
+  origin {
+    domain_name = aws_lb.public_nlb.dns_name
+    origin_id   = "nlb-ecs-proxy"
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "http-only"
+      origin_ssl_protocols   = ["TLSv1.2"]
+    }
+  }
   enabled             = true
   default_root_object = "index.html"
   default_cache_behavior {
@@ -209,6 +219,20 @@ resource "aws_cloudfront_distribution" "website_cdn" {
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
     target_origin_id = "private-alb"
+    viewer_protocol_policy = "allow-all"
+    forwarded_values {
+      query_string = false
+      headers      = ["*"]
+      cookies {
+        forward = "none"
+      }
+    }
+  }
+  ordered_cache_behavior {
+    path_pattern     = "/nlb/*"
+    allowed_methods  = ["GET", "HEAD"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "nlb-ecs-proxy"
     viewer_protocol_policy = "allow-all"
     forwarded_values {
       query_string = false
