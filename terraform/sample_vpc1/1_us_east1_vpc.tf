@@ -112,6 +112,25 @@ resource "aws_route_table_association" "sample_private_subnet2_private_rt" {
   subnet_id      = aws_subnet.sample_private_subnet2.id
 }
 
+# NAT Gateway for Private Subnets
+resource "aws_eip" "nat_eip" {
+  vpc = true
+  depends_on = [aws_internet_gateway.sample_internet_gateway]
+}
+
+resource "aws_nat_gateway" "sample_nat_gw" {
+  allocation_id = aws_eip.nat_eip.id
+  subnet_id     = aws_subnet.sample_subnet1.id # Place NAT GW in a public subnet (AZ1)
+  depends_on    = [aws_internet_gateway_attachment.sample_igw_attachment]
+  tags = { Name = "${var.prefix}-nat-gw" }
+}
+
+resource "aws_route" "private_internet_route" {
+  route_table_id         = aws_route_table.sample_private_rt.id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.sample_nat_gw.id
+}
+
 # 3. Security
 # ----------------------------------------------------------
 # Security group for EC2 and ALB
