@@ -160,18 +160,26 @@ resource "aws_security_group" "sample_security_group" {
 resource "aws_iam_role" "spoke_iam_role" {
   name = "${var.prefix}-spoke-role"
   assume_role_policy = jsonencode({
-    Version = "2012-10-17"
+    Version = "2012-10-17",
     Statement = [
       {
-        Effect = "Allow"
+        Effect = "Allow",
         Principal = {
-          Service = ["ec2.amazonaws.com"]
-        }
+          Service = [
+            "ec2.amazonaws.com",
+            "ecs-tasks.amazonaws.com"
+          ]
+        },
         Action = "sts:AssumeRole"
       }
     ]
   })
   path = "/"
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_execution" {
+  role       = aws_iam_role.spoke_iam_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
 resource "aws_iam_role_policy" "spoke_iam_policy" {
