@@ -1,9 +1,27 @@
 # ----------------------------------------------------------
-# S3 Private Static Website Hosting with CloudFront OAC (Compliant with Security Guardrails)
+# S3 Private Static Website Hosting with CloudFront OAC
+# + Public/Private ALB and Public NLB for ECS/ALB Proxy
+# ----------------------------------------------------------
+# This file configures:
+# - S3 bucket for static website content (private, OAC only)
+# - CloudFront distribution with multiple origins:
+#   - S3 (private, OAC)
+#   - Public ALB (for public ECS/ALB)
+#   - Private ALB (for private ECS/ALB)
+#   - Public NLB (for proxying CloudFront to private ALB/ECS)
+# - Path-based routing in CloudFront to each origin
+# - Logging, access controls, and security best practices
+#
+# Notes:
+# - NLB origin is for advanced proxy patterns (see CDN_Private_ALB.md)
+# - For NLB-to-ALB, you must manually update NLB target group with ALB private IPs
+# - ALB does path-based routing to ECS services
+# - This pattern is best for test/lab or where you can automate NLB target updates
 # ----------------------------------------------------------
 
 # 0. S3 Bucket for CloudFront Logging
 resource "aws_s3_bucket" "cloudfront_logs" {
+  # S3 bucket for CloudFront access logs
   bucket = "${var.prefix}-cloudfront-logs"
   force_destroy = true
   tags = {
@@ -12,6 +30,7 @@ resource "aws_s3_bucket" "cloudfront_logs" {
 }
 
 resource "aws_s3_bucket_policy" "cloudfront_logs_policy" {
+  # Policy to allow CloudFront to write logs to S3
   bucket = aws_s3_bucket.cloudfront_logs.id
   policy = jsonencode({
     Version = "2012-10-17",
@@ -32,6 +51,7 @@ resource "aws_s3_bucket_policy" "cloudfront_logs_policy" {
 }
 
 resource "aws_s3_bucket_ownership_controls" "cloudfront_logs" {
+  # Enforce object ownership for logs
   bucket = aws_s3_bucket.cloudfront_logs.id
   rule {
     object_ownership = "ObjectWriter"
@@ -40,6 +60,7 @@ resource "aws_s3_bucket_ownership_controls" "cloudfront_logs" {
 
 # 1. S3 Bucket and Access Controls
 resource "aws_s3_bucket" "website" {
+  # S3 bucket for static website content
   bucket = "${var.prefix}-website-bucket"
   force_destroy = true
   tags = {
@@ -48,6 +69,7 @@ resource "aws_s3_bucket" "website" {
 }
 
 resource "aws_s3_bucket_ownership_controls" "website" {
+  # Enforce bucket owner for website content
   bucket = aws_s3_bucket.website.id
   rule {
     object_ownership = "BucketOwnerEnforced"
@@ -55,6 +77,7 @@ resource "aws_s3_bucket_ownership_controls" "website" {
 }
 
 resource "aws_s3_bucket_public_access_block" "website" {
+  # Block all public access to website bucket
   bucket = aws_s3_bucket.website.id
   block_public_acls   = true
   block_public_policy = true
@@ -64,6 +87,7 @@ resource "aws_s3_bucket_public_access_block" "website" {
 
 # 2. S3 Website Content
 resource "aws_s3_object" "index" {
+  # Main index.html for S3 website
   bucket = aws_s3_bucket.website.id
   key    = "index.html"
   content = <<-EOT
@@ -94,6 +118,7 @@ resource "aws_s3_object" "index" {
 
 # 3. S3 Bucket Policy (OAC Only)
 resource "aws_s3_bucket_policy" "website_policy" {
+  # Allow CloudFront OAC to access S3 website content
   bucket = aws_s3_bucket.website.id
   policy = jsonencode({
     Version = "2012-10-17",
@@ -115,6 +140,7 @@ resource "aws_s3_bucket_policy" "website_policy" {
 
 # 4. CloudFront Origin Access Control (OAC)
 resource "aws_cloudfront_origin_access_control" "website_oac" {
+  # OAC for private S3 website bucket
   name                              = "${var.prefix}-website-oac"
   description                       = "OAC for private S3 website bucket"
   origin_access_control_origin_type  = "s3"
@@ -124,6 +150,8 @@ resource "aws_cloudfront_origin_access_control" "website_oac" {
 
 # 5. CloudFront Distribution
 resource "aws_cloudfront_distribution" "website_cdn" {
+  # CloudFront distribution with S3, ALB, and NLB origins
+  # Path-based routing to each origin
   origin {
     domain_name              = aws_s3_bucket.website.bucket_regional_domain_name
     origin_id                = "s3-website"
