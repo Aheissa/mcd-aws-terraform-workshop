@@ -57,3 +57,17 @@ jobs:
       - name: Terraform Apply
         working-directory: terraform
         run: terraform apply -auto-approve
+
+      - name: Terraform Output (print to log)
+        working-directory: terraform
+        run: terraform output
+
+      - name: Save Terraform Outputs to File
+        working-directory: terraform
+        run: terraform output > tf_outputs.txt
+
+      - name: Add Terraform Outputs to Job Summary
+        working-directory: terraform
+        run: |
+          echo '### Terraform Outputs' >> $GITHUB_STEP_SUMMARY
+          terraform output >> $GITHUB_STEP_SUMMARY
