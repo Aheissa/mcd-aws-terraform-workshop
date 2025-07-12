@@ -23,9 +23,7 @@ This project provisions a secure, multi-tier AWS environment using Terraform. It
                                             |
                               [ECS Services: web, app, api]
 
-
 ```
-
 ## CloudFront Routing & Origins
 - `/` → S3 (static site, private, OAC only)
 - `/alb/*` → Public ALB (public-facing ECS/app traffic)
@@ -65,6 +63,7 @@ CloudFront cannot directly communicate with a private ALB. To enable CloudFront 
 
 ## Manual Actions
 After Terraform apply, manually register a valid ENI or EC2 instance IP as a target in the NLB target group to forward NLB traffic to the private ALB.
+
 
 **Steps:**
 1. Identify a valid ENI or EC2 instance IP in your subnet that can proxy traffic to the ALB
