@@ -55,3 +55,15 @@ This project provisions a secure, multi-tier AWS environment using Terraform. It
 - **Private ALB**: Test from a bastion or private EC2 using `curl http://<private-alb-dns>/web` etc.
 - **CloudFront**: Test all paths (`/`, `/alb/`, `/web/`, `/app/`, `/api/`).
 - **EC2**: SSH and check `/var/www/html/index.html` and `/var/www/html/alb/index.html`.
+
+## Manual Actions
+
+After Terraform apply, you must manually register a valid IP address (ENI or proxy) as a target in the NLB target group if you want to forward NLB traffic to the ALB. This is because ALB IPs are not static and cannot be managed by Terraform. 
+
+**Steps:**
+1. Identify a valid ENI or EC2 instance IP in your subnet that can proxy traffic to the ALB.
+2. In the AWS Console, go to EC2 > Target Groups > [Your NLB Target Group].
+3. Register the IP address as a target.
+4. Ensure your proxy forwards traffic to the ALB DNS name.
+
+_Note: This step is required for NLB-to-ALB proxy patterns. Do not use ALB IPs directly._

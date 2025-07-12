@@ -240,14 +240,15 @@ resource "aws_lb_listener" "nlb_listener" {
   }
 }
 
-# Register the ALB's private IP(s) as NLB targets. Replace the IP below after ALB is created.
-resource "aws_lb_target_group_attachment" "nlb_alb" {
-  target_group_arn = aws_lb_target_group.nlb_ecs.arn
-  target_id        = "10.0.11.10" # <-- Replace with your ALB's private IP(s) after ALB is created
-  port             = 80
-  # NOTE: After ALB is created, update this target_id to the ALB's private IP(s).
-  # For multi-AZ, add more attachments for each ALB IP.
-}
+# MANUAL ACTION REQUIRED: NLB -> ALB Target Registration
+# The following resource is commented out because ALB IPs are not static and cannot be reliably registered as NLB targets in Terraform.
+# To forward NLB traffic to ALB, use a proxy or manually register valid ENI IPs in the NLB target group after deployment.
+#
+# resource "aws_lb_target_group_attachment" "nlb_alb" {
+#   target_group_arn = aws_lb_target_group.nlb_ecs.arn
+#   target_id        = "<MANUAL-ALB-IP-OR-PROXY-IP>" # Replace with a valid ENI IP in your subnet
+#   port             = 80
+# }
 # ----------------------------------------------------------
 # End of ECS + ALB/NLB path-based routing setup
 # ----------------------------------------------------------
