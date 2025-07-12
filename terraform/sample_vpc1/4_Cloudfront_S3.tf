@@ -218,7 +218,7 @@ resource "aws_cloudfront_distribution" "website_cdn" {
     path_pattern     = "/app/*"
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "private-alb"
+    target_origin_id = "nlb-ecs-proxy"
     viewer_protocol_policy = "allow-all"
     forwarded_values {
       query_string = false
@@ -232,7 +232,7 @@ resource "aws_cloudfront_distribution" "website_cdn" {
     path_pattern     = "/web/*"
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "private-alb"
+    target_origin_id = "nlb-ecs-proxy"
     viewer_protocol_policy = "allow-all"
     forwarded_values {
       query_string = false
@@ -246,7 +246,7 @@ resource "aws_cloudfront_distribution" "website_cdn" {
     path_pattern     = "/api/*"
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "private-alb"
+    target_origin_id = "nlb-ecs-proxy"
     viewer_protocol_policy = "allow-all"
     forwarded_values {
       query_string = false
@@ -284,6 +284,7 @@ resource "aws_cloudfront_distribution" "website_cdn" {
 }
 
 data "aws_caller_identity" "current" {}
-# ----------------------------------------------------------
+
+#------------------------------------
 # End of S3 Website and CloudFront configuration (private, compliant)
 # ----------------------------------------------------------
