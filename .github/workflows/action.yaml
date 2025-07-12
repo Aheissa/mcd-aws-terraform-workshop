@@ -1,3 +1,22 @@
+# ----------------------------------------------------------
+# GitHub Actions Workflow: Terraform Apply & Output Summary
+# ----------------------------------------------------------
+# This workflow:
+# - Configures AWS credentials using OIDC
+# - Checks out the repository
+# - Writes the MCD API key file for Cisco integration
+# - Sets up Terraform (version 1.7.5)
+# - Updates the S3 backend bucket name in provider.tf
+# - Runs Terraform init, validate, plan, and apply
+# - Prints Terraform outputs to the log
+# - Saves Terraform outputs to tf_outputs.txt for download
+# - Adds Terraform outputs to the GitHub Actions job summary for easy access
+#
+# Notes:
+# - Outputs are available in the Actions log, tf_outputs.txt, and the job summary UI
+# - Use these outputs to fill in your test summary and for troubleshooting
+# ----------------------------------------------------------
+
 name: Terraform Apply
 
 permissions:
@@ -71,3 +90,11 @@ jobs:
         run: |
           echo '### Terraform Outputs' >> $GITHUB_STEP_SUMMARY
           terraform output >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload Terraform Outputs File
+        uses: actions/upload-artifact@v3
+        with:
+          name: tf_outputs
+          path: terraform/tf_outputs.txt
+
+
