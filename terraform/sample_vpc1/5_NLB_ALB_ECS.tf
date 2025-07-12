@@ -218,7 +218,7 @@ resource "aws_lb" "public_nlb" {
 }
 
 resource "aws_lb_target_group" "nlb_ecs" {
-  name        = "${var.prefix}-nlb-ecs-tg"
+  name        = "${var.prefix}-nlb-alb-tg"
   port        = 80
   protocol    = "TCP"
   vpc_id      = aws_vpc.sample_vpc.id
@@ -227,7 +227,7 @@ resource "aws_lb_target_group" "nlb_ecs" {
     protocol = "TCP"
     port     = "80"
   }
-  tags = { Name = "${var.prefix}-nlb-ecs-tg" }
+  tags = { Name = "${var.prefix}-nlb-alb-tg" }
 }
 
 resource "aws_lb_listener" "nlb_listener" {
@@ -247,7 +247,6 @@ resource "aws_lb_listener" "nlb_listener" {
 # resource "aws_lb_target_group_attachment" "nlb_alb" {
 #   target_group_arn = aws_lb_target_group.nlb_ecs.arn
 #   target_id        = "<MANUAL-ALB-IP-OR-PROXY-IP>" # Replace with a valid ENI IP in your subnet
-#   port             = 80
 # }
 # ----------------------------------------------------------
 # End of ECS + ALB/NLB path-based routing setup
