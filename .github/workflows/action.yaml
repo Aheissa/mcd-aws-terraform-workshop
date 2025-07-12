@@ -92,7 +92,7 @@ jobs:
           terraform output >> $GITHUB_STEP_SUMMARY
 
       - name: Upload Terraform Outputs File
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: tf_outputs
           path: terraform/tf_outputs.txt

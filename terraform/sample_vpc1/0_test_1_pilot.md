@@ -23,7 +23,7 @@ After running `terraform apply`, fill in the output values below for your test a
 - Test: `http://<nlb_dns_name>/`
 
 ## 5. Private ALB (from within VPC)
-- Test: `http://<private_alb_dns_name>/app/`, `/web/`, `/api/`
+- Test: `http://<private_alb_dns_name>/app/`, `http://<private_alb_dns_name>/web/`, `http://<private_alb_dns_name>/api/`
 
 ## 6. ECS Service/Task Endpoints (if applicable)
 - (Add ECS service/task endpoints here if you expose them directly, e.g., via ALB/NLB or public IP)
