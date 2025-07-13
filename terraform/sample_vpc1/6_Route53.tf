@@ -46,7 +46,7 @@
 #   name = var.domain_name # <-- Set your domain name in terraform.tfvars
 #   comment = "Primary hosted zone for SNI-based routing lab"
 # }
-#
+
 # 2. CNAME records for each service FQDN, pointing to the internal ALB DNS name
 # Using dash-based subdomains for SNI-based routing and wildcard cert compatibility
 # resource "aws_route53_record" "web" {
