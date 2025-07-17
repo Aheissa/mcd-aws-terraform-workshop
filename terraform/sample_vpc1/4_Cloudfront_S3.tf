@@ -9,14 +9,9 @@
 #   - Public ALB (for public ECS/ALB)
 #   - Private ALB (for private ECS/ALB)
 #   - Public NLB (for proxying CloudFront to private ALB/ECS)
+#   - Custom origins for app/web/api/alb (CNAMEs)
 # - Path-based routing in CloudFront to each origin
 # - Logging, access controls, and security best practices
-#
-# Notes:
-# - NLB origin is for advanced proxy patterns (see CDN_Private_ALB.md)
-# - For NLB-to-ALB, you must manually update NLB target group with ALB private IPs
-# - ALB does path-based routing to ECS services
-# - This pattern is best for test/lab or where you can automate NLB target updates
 # ----------------------------------------------------------
 
 # 0. S3 Bucket for CloudFront Logging
@@ -187,6 +182,46 @@ resource "aws_cloudfront_distribution" "website_cdn" {
       origin_ssl_protocols   = ["TLSv1.2"]
     }
   }
+  origin {
+    domain_name = "www-app.cxcloudlabs.click"
+    origin_id   = "www-app"
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "match-viewer"
+      origin_ssl_protocols   = ["TLSv1.2"]
+    }
+  }
+  origin {
+    domain_name = "www-web.cxcloudlabs.click"
+    origin_id   = "www-web"
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "match-viewer"
+      origin_ssl_protocols   = ["TLSv1.2"]
+    }
+  }
+  origin {
+    domain_name = "www-api.cxcloudlabs.click"
+    origin_id   = "www-api"
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "match-viewer"
+      origin_ssl_protocols   = ["TLSv1.2"]
+    }
+  }
+  origin {
+    domain_name = "www-alb.cxcloudlabs.click"
+    origin_id   = "www-alb"
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "match-viewer"
+      origin_ssl_protocols   = ["TLSv1.2"]
+    }
+  }
   enabled             = true
   default_root_object = "index.html"
   default_cache_behavior {
@@ -218,7 +253,7 @@ resource "aws_cloudfront_distribution" "website_cdn" {
     path_pattern     = "/app/*"
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "nlb-ecs-proxy"
+    target_origin_id = "www-app"
     viewer_protocol_policy = "allow-all"
     forwarded_values {
       query_string = false
@@ -232,7 +267,7 @@ resource "aws_cloudfront_distribution" "website_cdn" {
     path_pattern     = "/web/*"
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "nlb-ecs-proxy"
+    target_origin_id = "www-web"
     viewer_protocol_policy = "allow-all"
     forwarded_values {
       query_string = false
@@ -246,7 +281,7 @@ resource "aws_cloudfront_distribution" "website_cdn" {
     path_pattern     = "/api/*"
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "nlb-ecs-proxy"
+    target_origin_id = "www-api"
     viewer_protocol_policy = "allow-all"
     forwarded_values {
       query_string = false

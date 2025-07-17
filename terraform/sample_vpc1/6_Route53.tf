@@ -75,11 +75,65 @@
 # ----------------------------------------------------------
 #
 # AWS Console (GUI) Steps:
-# 1. Go to Route 53 > Hosted zones > Create hosted zone. Enter your domain name.
-# 2. After creation, click 'Create record', select CNAME, and enter:
+# Step 0: Create an Outbound Route 53 Resolver Endpoint in US-VPC
+# - Go to Route 53 > Outbound endpoints > Create outbound endpoint.
+# - Select the US-VPC and choose at least two subnets in different AZs.
+# - Create a new security group allowing UDP/TCP port 53 from the new VPC's CIDR block.
+# - Complete the wizard and note the endpoint ID for use in forwarding rules.
+#
+# Step 1: Go to Route 53 > Hosted zones > Create hosted zone. Enter your domain name.
+# Step 2: After creation, click 'Create record', select CNAME, and enter:
 #    - Name: web (or app, api)
 #    - Value: <internal ALB DNS name>
 #    - TTL: 300
-# 3. Repeat for each service (web, app, api).
-# 4. Update your domain registrar to use the Route 53 NS records if needed.
+# Step 3: Repeat for each service (web, app, api).
+# Step 4: Update your domain registrar to use the Route 53 NS records if needed.
+# ----------------------------------------------------------
+# Cross-VPC Private DNS Resolution via Transit Gateway & Route 53 Resolver
+# ----------------------------------------------------------
+# Step-by-step guide for enabling DNS resolution from a new VPC to a private ALB in US-VPC
+# ----------------------------------------------------------
+
+# 1. Enable DNS Resolution Support on the Transit Gateway Attachments
+#    - In the AWS Console, go to VPC > Transit Gateway Attachments.
+#    - For each VPC attachment (US-VPC and new VPC), select the attachment and ensure 'DNS support' is enabled.
+
+# 2. Configure AmazonProvidedDNS in Both VPCs
+#    - In the AWS Console, go to VPC > Your VPCs.
+#    - For both VPCs, ensure:
+#      - enableDnsSupport = true
+#      - enableDnsHostnames = true
+#    - These settings are usually enabled by default.
+
+# 3. Create an Outbound Route 53 Resolver Endpoint in US-VPC
+#    - Go to Route 53 > Outbound endpoints > Create outbound endpoint.
+#    - Select the US-VPC and choose at least two subnets in different AZs.
+#    - Create a new security group allowing UDP/TCP port 53 from the new VPC's CIDR block.
+#    - Complete the wizard and note the endpoint ID for use in forwarding rules.
+
+# 4. Create a Route 53 Resolver Rule (Forwarding Rule)
+#    - Go to Route 53 > Rules > Create rule.
+#    - Choose 'Forward' as the rule type.
+#    - For 'Domain name', enter the domain to forward (e.g., us-east-1.elb.amazonaws.com for ALB DNS).
+#    - For 'Rule action', select 'Forward'.
+#    - For 'Forward to', select the outbound resolver endpoint created in US-VPC.
+#    - Complete the wizard to create the rule.
+
+# 5. Associate the Rule with the New VPC
+#    - In Route 53 > Rules, select the rule you created.
+#    - Click 'Associate VPCs'.
+#    - Select your new VPC and confirm.
+#    - Now, DNS queries for the specified domain from the new VPC will be forwarded to the US-VPC’s resolver endpoint.
+
+# 6. Security Groups and NACLs
+#    - Ensure the security group for the resolver endpoint allows inbound UDP/TCP 53 from the new VPC’s CIDR.
+#    - Ensure NACLs on the subnets for the endpoints allow UDP/TCP 53 from/to the new VPC’s CIDR.
+
+# 7. Test DNS Resolution
+#    - Launch an EC2 instance in the new VPC.
+#    - SSH into the instance.
+#    - Run: nslookup internal-spoke1-alb-private-53107485.us-east-1.elb.amazonaws.com
+#    - You should receive the private IP(s) of the ALB in the US-VPC.
+# ----------------------------------------------------------
+# Save this section as a technical reference for cross-VPC DNS resolution setup.
 # ----------------------------------------------------------
