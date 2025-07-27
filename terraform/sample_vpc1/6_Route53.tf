@@ -52,10 +52,10 @@
 # Route 53 configuration for SNI-based routing with Ingress Gateway
 # ----------------------------------------------------------
 # 1. Hosted Zone (domain name is a variable, provide value in terraform.tfvars)
-# resource "aws_route53_zone" "main" {
-#   name = var.domain_name # <-- Set your domain name in terraform.tfvars
-#   comment = "Primary hosted zone for SNI-based routing lab"
-# }
+resource "aws_route53_zone" "main" {
+  name    = var.domain_name
+  comment = "Primary hosted zone for SNI-based routing lab"
+}
 
 # 2. CNAME records for each service FQDN, pointing to the correct ALB/NLB DNS name
 resource "aws_route53_record" "alb" {
