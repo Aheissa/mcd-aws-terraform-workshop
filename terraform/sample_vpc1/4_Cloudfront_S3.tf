@@ -305,8 +305,12 @@ resource "aws_cloudfront_distribution" "website_cdn" {
       }
     }
   }
+  aliases = ["cxcloudlabs.click"]
   viewer_certificate {
-    cloudfront_default_certificate = true
+    acm_certificate_arn            = "arn:aws:acm:us-east-1:211635102794:certificate/acff19ec-8f61-43d0-b739-57590b8ac597"
+    ssl_support_method             = "sni-only"
+    minimum_protocol_version       = "TLSv1.2_2021"
+    cloudfront_default_certificate = false
   }
   restrictions {
     geo_restriction {
