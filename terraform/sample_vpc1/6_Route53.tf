@@ -1,9 +1,9 @@
 # ----------------------------------------------------------
 # SNI-Based Routing Design Notes
 # ----------------------------------------------------------
-# Why use dash ("-") instead of dot (".") in subdomains like www-web.example.com?
+# Why use dash ("-") instead of dot (".") in subdomains like www-web.cxcloudlabs.click?
 # - DNS treats each dot as a new label (subdomain). Using dashes keeps all FQDNs as direct subdomains of your main domain.
-# - SNI routing and wildcard certificates (*.example.com) work with dash-based FQDNs, but not with dot-based (e.g., www.web.example.com).
+# - SNI routing and wildcard certificates (*.cxcloudlabs.click) work with dash-based FQDNs, but not with dot-based (e.g., www.web.cxcloudlabs.click).
 # - This simplifies SNI-based routing and certificate management.
 #
 # Example Flows:
@@ -57,41 +57,27 @@ resource "aws_route53_zone" "main" {
   comment = "Primary hosted zone for SNI-based routing lab"
 }
 
-# 2. CNAME records for each service FQDN, pointing to the correct ALB/NLB DNS name
-resource "aws_route53_record" "alb" {
-  zone_id = aws_route53_zone.main.zone_id
-  name    = "www-alb.${var.domain_name}"
-  type    = "CNAME"
-  ttl     = 300
-  records = [aws_lb.sample_alb_public.dns_name]
-}
+# 2. CNAME records for each service FQDN, pointing to the correct NLB DNS name (MCD NLB)
 resource "aws_route53_record" "app" {
   zone_id = aws_route53_zone.main.zone_id
   name    = "www-app.${var.domain_name}"
   type    = "CNAME"
   ttl     = 300
-  records = [aws_lb.public_nlb.dns_name]
+  records = ["ciscomcd-l-ingrlfyepqxg-87ecd2011d99432e.elb.us-east-1.amazonaws.com"]
 }
 resource "aws_route53_record" "web" {
   zone_id = aws_route53_zone.main.zone_id
   name    = "www-web.${var.domain_name}"
   type    = "CNAME"
   ttl     = 300
-  records = [aws_lb.public_nlb.dns_name]
+  records = ["ciscomcd-l-ingrlfyepqxg-87ecd2011d99432e.elb.us-east-1.amazonaws.com"]
 }
 resource "aws_route53_record" "api" {
   zone_id = aws_route53_zone.main.zone_id
   name    = "www-api.${var.domain_name}"
   type    = "CNAME"
   ttl     = 300
-  records = [aws_lb.public_nlb.dns_name]
-}
-resource "aws_route53_record" "nlb" {
-  zone_id = aws_route53_zone.main.zone_id
-  name    = "www-nlb.${var.domain_name}"
-  type    = "CNAME"
-  ttl     = 300
-  records = [aws_lb.public_nlb.dns_name]
+  records = ["ciscomcd-l-ingrlfyepqxg-87ecd2011d99432e.elb.us-east-1.amazonaws.com"]
 }
 
 
