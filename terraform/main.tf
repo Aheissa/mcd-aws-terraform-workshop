@@ -4,7 +4,7 @@ module "sample_vpc" {
   aws_ssh_key_pair_name = var.aws_ssh_key_pair_name
   aws_availability_zone1= var.aws_availability_zone1
   aws_availability_zone2 = var.aws_availability_zone2
-  domain_name = var.domain_name 
+  #domain_name = var.domain_name 
 
   # ---  Step 4: Enable VPC Traffic Visibility  ---
   # mcd_dns_query_log_config_id       = module.cisco_mcd.mcd_dns_query_log_config_id
