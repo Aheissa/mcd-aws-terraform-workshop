@@ -17,7 +17,7 @@
 # 0. S3 Bucket for CloudFront Logging
 resource "aws_s3_bucket" "cloudfront_logs" {
   # S3 bucket for CloudFront access logs
-  bucket = "${var.prefix}-cloudfront-logs"
+  bucket        = "${var.prefix}-cloudfront-logs"
   force_destroy = true
   tags = {
     Name = "${var.prefix}-cloudfront-logs"
@@ -31,10 +31,10 @@ resource "aws_s3_bucket_policy" "cloudfront_logs_policy" {
     Version = "2012-10-17",
     Statement = [
       {
-        Effect = "Allow",
+        Effect    = "Allow",
         Principal = { Service = "cloudfront.amazonaws.com" },
-        Action = ["s3:PutObject"],
-        Resource = "${aws_s3_bucket.cloudfront_logs.arn}/*",
+        Action    = ["s3:PutObject"],
+        Resource  = "${aws_s3_bucket.cloudfront_logs.arn}/*",
         Condition = {
           StringEquals = {
             "AWS:SourceAccount" = data.aws_caller_identity.current.account_id
@@ -56,7 +56,7 @@ resource "aws_s3_bucket_ownership_controls" "cloudfront_logs" {
 # 1. S3 Bucket and Access Controls
 resource "aws_s3_bucket" "website" {
   # S3 bucket for static website content
-  bucket = "${var.prefix}-website-bucket"
+  bucket        = "${var.prefix}-website-bucket"
   force_destroy = true
   tags = {
     Name = "${var.prefix}-website-bucket"
@@ -73,19 +73,19 @@ resource "aws_s3_bucket_ownership_controls" "website" {
 
 resource "aws_s3_bucket_public_access_block" "website" {
   # Block all public access to website bucket
-  bucket = aws_s3_bucket.website.id
-  block_public_acls   = true
-  block_public_policy = true
-  ignore_public_acls  = true
+  bucket                  = aws_s3_bucket.website.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
   restrict_public_buckets = true
 }
 
 # 2. S3 Website Content
 resource "aws_s3_object" "index" {
   # Main index.html for S3 website
-  bucket = aws_s3_bucket.website.id
-  key    = "index.html"
-  content = <<-EOT
+  bucket       = aws_s3_bucket.website.id
+  key          = "index.html"
+  content      = <<-EOT
     <html>
     <body style="background: #f4f4f4; font-family: Arial, sans-serif;">
       <h1 style="color: #2e86de; font-size: 48px; font-family: 'Trebuchet MS', sans-serif;">Hello World from S3 Bucket1 !</h1>
@@ -119,10 +119,10 @@ resource "aws_s3_bucket_policy" "website_policy" {
     Version = "2012-10-17",
     Statement = [
       {
-        Effect = "Allow",
-        Principal = {"Service": "cloudfront.amazonaws.com"},
-        Action = ["s3:GetObject"],
-        Resource = ["${aws_s3_bucket.website.arn}/*"],
+        Effect    = "Allow",
+        Principal = { "Service" : "cloudfront.amazonaws.com" },
+        Action    = ["s3:GetObject"],
+        Resource  = ["${aws_s3_bucket.website.arn}/*"],
         Condition = {
           StringEquals = {
             "AWS:SourceArn" = aws_cloudfront_distribution.website_cdn.arn
@@ -138,7 +138,7 @@ resource "aws_cloudfront_origin_access_control" "website_oac" {
   # OAC for private S3 website bucket
   name                              = "${var.prefix}-website-oac"
   description                       = "OAC for private S3 website bucket"
-  origin_access_control_origin_type  = "s3"
+  origin_access_control_origin_type = "s3"
   signing_behavior                  = "always"
   signing_protocol                  = "sigv4"
 }
@@ -225,91 +225,56 @@ resource "aws_cloudfront_distribution" "website_cdn" {
   enabled             = true
   default_root_object = "index.html"
   default_cache_behavior {
-    allowed_methods  = ["GET", "HEAD"]
-    cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "s3-website"
+    allowed_methods        = ["GET", "HEAD"]
+    cached_methods         = ["GET", "HEAD"]
+    target_origin_id       = "s3-website"
     viewer_protocol_policy = "allow-all"
-    forwarded_values {
-      query_string = false
-      cookies {
-        forward = "none"
-      }
-    }
+    cache_policy_id        = "658327ea-f89d-4fab-a63d-7e88639e58f6" # Managed-CachingOptimized
   }
   ordered_cache_behavior {
-    path_pattern     = "/alb/*"
-    allowed_methods  = ["GET", "HEAD"]
-    cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "public-alb"
-    viewer_protocol_policy = "allow-all"
-    forwarded_values {
-      query_string = false
-      cookies {
-        forward = "none"
-      }
-    }
+    path_pattern             = "/alb/*"
+    allowed_methods          = ["GET", "HEAD"]
+    cached_methods           = ["GET", "HEAD"]
+    target_origin_id         = "public-alb"
+    viewer_protocol_policy   = "allow-all"
+    cache_policy_id          = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # Managed-CachingDisabled
+    origin_request_policy_id = "88a5eaf4-2fd4-4709-b370-b4c650ea3fcf" # Managed-AllViewerExceptHostHeader
   }
   ordered_cache_behavior {
-    path_pattern     = "/app/*"
-    allowed_methods  = ["GET", "HEAD"]
-    cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "www-app"
-    viewer_protocol_policy = "allow-all"
-    cache_policy_id          = "Managed-CachingDisabled"
-    origin_request_policy_id = "Managed-AllViewerExceptHostHeader"
-    forwarded_values {
-      query_string = false
-      headers      = ["*"]
-      cookies {
-        forward = "none"
-      }
-    }
+    path_pattern             = "/app/*"
+    allowed_methods          = ["GET", "HEAD"]
+    cached_methods           = ["GET", "HEAD"]
+    target_origin_id         = "www-app"
+    viewer_protocol_policy   = "allow-all"
+    cache_policy_id          = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # Managed-CachingDisabled
+    origin_request_policy_id = "88a5eaf4-2fd4-4709-b370-b4c650ea3fcf" # Managed-AllViewerExceptHostHeader
   }
   ordered_cache_behavior {
-    path_pattern     = "/web/*"
-    allowed_methods  = ["GET", "HEAD"]
-    cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "www-web"
-    viewer_protocol_policy = "allow-all"
-    cache_policy_id          = "Managed-CachingDisabled"
-    origin_request_policy_id = "Managed-AllViewerExceptHostHeader"
-    forwarded_values {
-      query_string = false
-      headers      = ["*"]
-      cookies {
-        forward = "none"
-      }
-    }
+    path_pattern             = "/web/*"
+    allowed_methods          = ["GET", "HEAD"]
+    cached_methods           = ["GET", "HEAD"]
+    target_origin_id         = "www-web"
+    viewer_protocol_policy   = "allow-all"
+    cache_policy_id          = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # Managed-CachingDisabled
+    origin_request_policy_id = "88a5eaf4-2fd4-4709-b370-b4c650ea3fcf" # Managed-AllViewerExceptHostHeader
   }
   ordered_cache_behavior {
-    path_pattern     = "/api/*"
-    allowed_methods  = ["GET", "HEAD"]
-    cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "www-api"
-    viewer_protocol_policy = "allow-all"
-    cache_policy_id          = "Managed-CachingDisabled"
-    origin_request_policy_id = "Managed-AllViewerExceptHostHeader"
-    forwarded_values {
-      query_string = false
-      headers      = ["*"]
-      cookies {
-        forward = "none"
-      }
-    }
+    path_pattern             = "/api/*"
+    allowed_methods          = ["GET", "HEAD"]
+    cached_methods           = ["GET", "HEAD"]
+    target_origin_id         = "www-api"
+    viewer_protocol_policy   = "allow-all"
+    cache_policy_id          = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # Managed-CachingDisabled
+    origin_request_policy_id = "88a5eaf4-2fd4-4709-b370-b4c650ea3fcf" # Managed-AllViewerExceptHostHeader
   }
   ordered_cache_behavior {
-    path_pattern     = "/nlb/*"
-    allowed_methods  = ["GET", "HEAD"]
-    cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "nlb-ecs-proxy"
-    viewer_protocol_policy = "allow-all"
-    forwarded_values {
-      query_string = false
-      headers      = ["*"]
-      cookies {
-        forward = "none"
-      }
-    }
+    path_pattern             = "/nlb/*"
+    allowed_methods          = ["GET", "HEAD"]
+    cached_methods           = ["GET", "HEAD"]
+    target_origin_id         = "nlb-ecs-proxy"
+    viewer_protocol_policy   = "allow-all"
+    cache_policy_id          = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # Managed-CachingDisabled
+    origin_request_policy_id = "88a5eaf4-2fd4-4709-b370-b4c650ea3fcf" # Managed-AllViewerExceptHostHeader
   }
   aliases = ["cxcloudlabs.click"]
   viewer_certificate {
