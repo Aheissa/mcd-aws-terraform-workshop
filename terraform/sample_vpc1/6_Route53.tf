@@ -52,34 +52,33 @@
 # Route 53 configuration for SNI-based routing with Ingress Gateway
 # ----------------------------------------------------------
 # 1. Hosted Zone (domain name is a variable, provide value in terraform.tfvars)
-resource "aws_route53_zone" "main" {
-  name    = var.domain_name
-  comment = "Primary hosted zone for SNI-based routing lab"
-}
+# resource "aws_route53_zone" "main" {
+#   name    = var.domain_name
+#   comment = "Primary hosted zone for SNI-based routing lab"
+# }
 
 # 2. CNAME records for each service FQDN, pointing to the correct NLB DNS name (MCD NLB)
-resource "aws_route53_record" "app" {
-  zone_id = aws_route53_zone.main.zone_id
-  name    = "www-app.${var.domain_name}"
-  type    = "CNAME"
-  ttl     = 300
-  records = ["ciscomcd-l-ingrlfyepqxg-87ecd2011d99432e.elb.us-east-1.amazonaws.com"]
-}
-resource "aws_route53_record" "web" {
-  zone_id = aws_route53_zone.main.zone_id
-  name    = "www-web.${var.domain_name}"
-  type    = "CNAME"
-  ttl     = 300
-  records = ["ciscomcd-l-ingrlfyepqxg-87ecd2011d99432e.elb.us-east-1.amazonaws.com"]
-}
-resource "aws_route53_record" "api" {
-  zone_id = aws_route53_zone.main.zone_id
-  name    = "www-api.${var.domain_name}"
-  type    = "CNAME"
-  ttl     = 300
-  records = ["ciscomcd-l-ingrlfyepqxg-87ecd2011d99432e.elb.us-east-1.amazonaws.com"]
-}
-
+# resource "aws_route53_record" "app" {
+#   zone_id = aws_route53_zone.main.zone_id
+#   name    = "www-app.${var.domain_name}"
+#   type    = "CNAME"
+#   ttl     = 300
+#   records = ["ciscomcd-l-ingrlfyepqxg-87ecd2011d99432e.elb.us-east-1.amazonaws.com"]
+# }
+# resource "aws_route53_record" "web" {
+#   zone_id = aws_route53_zone.main.zone_id
+#   name    = "www-web.${var.domain_name}"
+#   type    = "CNAME"
+#   ttl     = 300
+#   records = ["ciscomcd-l-ingrlfyepqxg-87ecd2011d99432e.elb.us-east-1.amazonaws.com"]
+# }
+# resource "aws_route53_record" "api" {
+#   zone_id = aws_route53_zone.main.zone_id
+#   name    = "www-api.${var.domain_name}"
+#   type    = "CNAME"
+#   ttl     = 300
+#   records = ["ciscomcd-l-ingrlfyepqxg-87ecd2011d99432e.elb.us-east-1.amazonaws.com"]
+# }
 
 # ----------------------------------------------------------
 # End of Route 53 configuration for SNI-based routing

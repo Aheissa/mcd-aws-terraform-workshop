@@ -255,6 +255,8 @@ resource "aws_cloudfront_distribution" "website_cdn" {
     cached_methods   = ["GET", "HEAD"]
     target_origin_id = "www-app"
     viewer_protocol_policy = "allow-all"
+    cache_policy_id          = "Managed-CachingDisabled"
+    origin_request_policy_id = "Managed-AllViewerExceptHostHeader"
     forwarded_values {
       query_string = false
       headers      = ["*"]
@@ -269,6 +271,8 @@ resource "aws_cloudfront_distribution" "website_cdn" {
     cached_methods   = ["GET", "HEAD"]
     target_origin_id = "www-web"
     viewer_protocol_policy = "allow-all"
+    cache_policy_id          = "Managed-CachingDisabled"
+    origin_request_policy_id = "Managed-AllViewerExceptHostHeader"
     forwarded_values {
       query_string = false
       headers      = ["*"]
@@ -283,6 +287,8 @@ resource "aws_cloudfront_distribution" "website_cdn" {
     cached_methods   = ["GET", "HEAD"]
     target_origin_id = "www-api"
     viewer_protocol_policy = "allow-all"
+    cache_policy_id          = "Managed-CachingDisabled"
+    origin_request_policy_id = "Managed-AllViewerExceptHostHeader"
     forwarded_values {
       query_string = false
       headers      = ["*"]

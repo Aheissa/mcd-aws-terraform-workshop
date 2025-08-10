@@ -4,7 +4,7 @@
 This project provisions a secure, multi-tier AWS environment using Terraform. It includes:
 - VPC with public and private subnets across two AZs
 - Public and private Application Load Balancers (ALBs)
-- EC2 instances for web/app
+- EC2 instances for web
 - ECS Fargate cluster with services (web, app, api) behind a private ALB
 - S3 bucket for static website, served via CloudFront
 - CloudFront distribution with path-based routing to S3, public ALB, and private ALB/ECS (via NLB proxy)
@@ -15,18 +15,19 @@ This project provisions a secure, multi-tier AWS environment using Terraform. It
 [Internet]
     |
 [CloudFront]
+MCD 
     |-------------------|-------------------|
     |                   |                   |
-  [S3]           [Public ALB]             [NLB]
+  [S3]           [Public ALB]             [Public NLB]
    |                   |                    |
-[Static Site]   [Root, /alb]            [Private ALB]
+[Static Site]   [/alb]            [Private ALB]
                                             |
-                              [ECS Services: web, app, api]
+                              [ECS Services: /web, /app, /api]
 
 ```
 ## CloudFront Routing & Origins
 - `/` → S3 (static site, private, OAC only)
-- `/alb/*` → Public ALB (public-facing ECS/app traffic)
+- `/alb/*` → Public ALB (public-facing EC2/app traffic)
 - `/web/*`, `/app/*`, `/api/*` → NLB (proxy to private ALB/ECS)
 
 **Origins:**
