@@ -316,7 +316,7 @@ resource "aws_instance" "private_instance1" {
   availability_zone           = var.aws_availability_zone1
   ami                         = data.aws_ami.ubuntu2204.id
   iam_instance_profile        = aws_iam_instance_profile.spoke_instance_profile.name
-  instance_type               = "t2.micro"
+  instance_type               = "t2.nano"
   key_name                    = var.aws_ssh_key_pair_name
   user_data                   = <<EOT
 #!/bin/bash
@@ -750,7 +750,7 @@ resource "aws_instance" "private_instance2" {
   availability_zone           = var.aws_availability_zone2
   ami                         = data.aws_ami.ubuntu2204.id
   iam_instance_profile        = aws_iam_instance_profile.spoke_instance_profile.name
-  instance_type               = "t2.micro"
+  instance_type               = "t2.nano"
   key_name                    = var.aws_ssh_key_pair_name
   user_data                   = <<EOT
 #!/bin/bash
